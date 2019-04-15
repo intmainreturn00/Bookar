@@ -63,26 +63,53 @@ fun generateStubBookModels(): List<BookModel> {
         BookModel(5, 454, "https://images.gr-assets.com/books/1327131560m/42432.jpg"),
         BookModel(5, 604, "https://images.gr-assets.com/books/1434908555m/234225.jpg"),
         BookModel(5, 1177, "https://images.gr-assets.com/books/1497931121m/62291.jpg"),
-        BookModel(5, 226, "https://images.gr-assets.com/books/1479863624m/1618.jpg")
+        BookModel(5, 226, "https://images.gr-assets.com/books/1479863624m/1618.jpg"),
+        BookModel(5, 1061, "https://images.gr-assets.com/books/1429538615m/13497.jpg"),
+        BookModel(5, 341, "https://images.gr-assets.com/books/1474169725m/15881.jpg"),
+        BookModel(5, 271, "https://images.gr-assets.com/books/1548535751m/22328.jpg"),
+        BookModel(5, 2007, "https://images.gr-assets.com/books/1293582551m/10016013.jpg"),
+        BookModel(5, 182, "https://images.gr-assets.com/books/1427731744m/17125.jpg"),
+        BookModel(5, 453, "https://images.gr-assets.com/books/1463157317m/168668.jpg"),
+        BookModel(5, 311, "https://images.gr-assets.com/books/1554312314m/18373.jpg"),
+        BookModel(4, 256, "https://images.gr-assets.com/books/1466165860m/30637548.jpg"),
+        BookModel(4, 528, "https://images.gr-assets.com/books/1320489812m/522776.jpg"),
+        BookModel(4, 480, "https://images.gr-assets.com/books/1291373267m/7846220.jpg"),
+        BookModel(4, null, "https://images.gr-assets.com/books/1336403527m/2608184.jpg"),
+        BookModel(4, 335, "https://images.gr-assets.com/books/1533117961m/17214.jpg"),
+        BookModel(4, 384, "https://images.gr-assets.com/books/1274386753m/2524344.jpg"),
+        BookModel(4, 460, "https://images.gr-assets.com/books/1378626185m/18464870.jpg"),
+        BookModel(4, 195, "https://images.gr-assets.com/books/1499341314m/5460398.jpg"),
+        BookModel(4, 291, "https://images.gr-assets.com/books/1325028693m/38500.jpg"),
+        BookModel(4, 126, "https://images.gr-assets.com/books/1457906509m/113205.jpg"),
+        BookModel(4, 320, "https://images.gr-assets.com/books/1474154022m/3.jpg"),
+        BookModel(4, 116, "https://images.gr-assets.com/books/1535737556m/41580312.jpg"),
+        BookModel(4, 288, "https://images.gr-assets.com/books/1328705200m/110419.jpg"),
+        BookModel(4, 304, "https://images.gr-assets.com/books/1405259788m/12843.jpg"),
+        BookModel(4, 540, "https://images.gr-assets.com/books/1410136019m/629.jpg"),
+        BookModel(4, 204, "https://images.gr-assets.com/books/1498631519m/95558.jpg"),
+        BookModel(4, 320, "https://images.gr-assets.com/books/1337690429m/13416454.jpg"),
+        BookModel(4, 2530, "https://images.gr-assets.com/books/1487328314m/13588846.jpg"),
+        BookModel(4, 288, "https://images.gr-assets.com/books/1353621838m/12844.jpg")
     )
 }
 
 fun fillBooks(books: MutableList<ARBookWithCover>) {
 
-    makeGrid44(generateStubBookModels(), books)
+    makeGrid(generateStubBookModels(), books)
 }
 
-fun makeGrid44(data: List<BookModel>, res: MutableList<ARBookWithCover>) {
+fun makeGrid(data: List<BookModel>, res: MutableList<ARBookWithCover>) {
     val offset = 0.03f
-    var x = 0.0f
-    var z = 0.0f
+    var x: Float
+    var z: Float
     var zLayer = 0
     var i = 0
 
-    val elevationMap = listOf(
-        0f, 0f, 0f,
-        0f, 0f, 0f,
-        0f, 0f, 0f
+    val elevationMap = mutableListOf(
+        0f, 0f, 0f, 0f,
+        0f, 0f, 0f, 0f,
+        0f, 0f, 0f, 0f,
+        0f, 0f, 0f, 0f
     )
 
     for (book in data) {
@@ -93,17 +120,20 @@ fun makeGrid44(data: List<BookModel>, res: MutableList<ARBookWithCover>) {
         res.add(
             ARBookWithCover(
                 makeSize(book.pages),
-                Vector3(x, 0f, z),
+                Vector3(x, elevationMap[i], z),
                 makeAngle(),
                 book.cover
             )
         )
 
-        if (i == 8) {
-            break
-        }
+        elevationMap[i] += res[res.size - 1].size.y
 
-        i++
+        if (i == 15) {
+            zLayer++
+            i = 0
+        } else {
+            i++
+        }
 
     }
 
@@ -113,9 +143,12 @@ fun makeGrid44(data: List<BookModel>, res: MutableList<ARBookWithCover>) {
 }
 
 val offsets = listOf(
-    Pair(-1, -1), Pair(0, -1), Pair(1, -1),
-    Pair(-1,  0), Pair(0,  0), Pair(1, 0),
-    Pair(-1,  1), Pair(0,  1), Pair(1, 1)
+    Pair(-1.5f, -1.5f), Pair(-0.5f, -1.5f), Pair( 0.5f, -1.5f), Pair( 1.5f, -1.5f),
+    Pair(-1.5f, -0.5f), Pair(-0.5f, -0.5f), Pair( 0.5f, -0.5f), Pair( 1.5f, -0.5f),
+//                                         .
+    Pair(-1.5f,  0.5f), Pair(-0.5f,  0.5f), Pair( 0.5f,  0.5f), Pair( 1.5f,  0.5f),
+    Pair(-1.5f,  1.5f), Pair(-0.5f,  1.5f), Pair( 0.5f,  1.5f), Pair( 1.5f,  1.5f)
+
 )
 
 const val paperbackWidth = 0.1524f // 6''
@@ -123,16 +156,16 @@ const val paperbackHeight = 0.2286f // 9''
 
 fun makeDepth(pages: Int?): Float {
     return if (pages != null) {
-        pages / 20.0f / 1000f
+        pages / 17.0f / 1000f
     } else {
-        600 / 20.0f / 1000f
+        600 / 17.0f / 1000f
     }
 }
 
 fun makeSize(pages: Int?) = Vector3(
-    paperbackWidth, //+ (-200..400).random() / 1000f,
+    paperbackWidth + (-10..10).random() / 1000f,
     makeDepth(pages),
-    paperbackHeight //+ (-200..400).random() / 1000f
+    paperbackHeight + (-10..10).random() / 1000f
 )
 
-fun makeAngle() = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), 180f + (-10..+10).random())
+fun makeAngle() = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), 180f + (-7..+7).random())
