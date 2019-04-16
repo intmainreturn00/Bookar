@@ -18,10 +18,19 @@ import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
+import com.intmainreturn00.grapi.Order
+import com.intmainreturn00.grapi.Review
+import com.intmainreturn00.grapi.Sort
+import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
+import org.jetbrains.anko.browse
 import org.michaelevans.colorart.library.ColorArt
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.*
 
 
 class MainActivity : ScopedAppActivity() {
@@ -52,19 +61,78 @@ class MainActivity : ScopedAppActivity() {
             }
         }
 
-        launch {
-            fillBooks(books)
+
+
+        if (!grapi.isLoggedIn()) {
+            launch {
+                grapi.loginStart()
+                browse(grapi.getAuthorizationUrl())
+            }
+        } else {
             loadResources()
+        }
+
+        launch {
+            grapi.loginEnd(intent) { ok ->
+                if (ok) {
+                    loadResources()
+                }
+            }
         }
 
     }
 
 
-    suspend fun loadResources() {
-        bookModel = ModelRenderable.builder()
-            .setSource(fragment.context, Uri.parse("book1.sfb"))
-            .build().await()
+    fun loadResources() {
+        launch {
+            bookModel = ModelRenderable.builder()
+                .setSource(fragment.context, Uri.parse("book1.sfb"))
+                .build().await()
 
+            val userId = grapi.getUserId()
+            val bookModels = mutableListOf<BookModel>()
+            val reviews = grapi.getAllReviews(userId.id/*, sort = Sort.DATE_ADDED, order = Order.ASCENDING*/)
+
+//            val sortedReviews =
+//                reviews.sortedWith(
+//                compareByDescending<Review> { it.rating ?: -1 }
+//                    .thenByDescending { it.readCount ?: -1 }
+//                    .thenByDescending { it.book.numPages }
+//                    .thenByDescending { parseDate(it.readAt) }
+//            )
+            val sortedReviews = reviews.sortedWith(
+                compareBy(
+                    { it.readCount },
+                    { it.rating }
+                )
+            )
+
+            for (review in sortedReviews) {
+                if (!review.book.imageUrl.contains("nophoto")) {
+                    bookModels.add(BookModel(review.book.numPages, review.book.imageUrlSmall))
+                } else {
+                    println(review.book.title + " " + review.book.id)
+                    if (review.book.isbn.isNotEmpty()) {
+                        bookModels.add(
+                            BookModel(
+                                review.book.numPages,
+                                "https://covers.openlibrary.org/b/isbn/${review.book.isbn}-M.jpg"
+                            )
+                        )
+                    } else {
+                        bookModels.add(BookModel(review.book.numPages, review.book.imageUrl))
+                    }
+                }
+            }
+
+
+//            repeat(20) {
+//                println(sortedReviews[sortedReviews.size - it - 1].book.title + " " + sortedReviews[sortedReviews.size - it - 1].readCount)
+//            }
+
+            fillBooks(bookModels, books)
+            println("models loaded")
+        }
         add.show()
     }
 
@@ -86,18 +154,23 @@ class MainActivity : ScopedAppActivity() {
 
     private suspend fun placeBooks(anchor: Anchor) {
         val anchorNode = AnchorNode(anchor)
+        fragment.arSceneView.scene.addChild(anchorNode)
+
 
         for (book in books) {
             val node = makeBookNode(bookModel.makeCopy(), book.size, book.position, book.rotation)
             val coverRenderable = loadCoverRenderable(this)
-            val cover = downloadBitmap(this, book.coverUrl)!!
+            val cover = downloadBitmap2(this, book.coverUrl)!!
             addCover(cover, node, (node.renderable as ModelRenderable).collisionShape as Box, coverRenderable)
             paintBook(cover, node)
             node.setParent(anchorNode)
+            println("add another book")
         }
 
-        fragment.arSceneView.scene.addChild(anchorNode)
+
         fragment.arSceneView.planeRenderer.isVisible = false
+
+        add.hide()
     }
 
 

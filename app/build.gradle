@@ -20,12 +20,19 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [host:"goodreads", scheme:"oauth"]
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    buildTypes.each {
+        it.buildConfigField 'String', 'goodreadsKey', goodreadsKey
+        it.buildConfigField 'String', 'goodreadsSecret', goodreadsSecret
+        it.buildConfigField 'String', 'goodreadsCallback', "\"oauth://goodreads\""
     }
 
     packagingOptions {
@@ -49,6 +56,10 @@ dependencies {
     //implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
+
+    implementation "org.jetbrains.anko:anko-commons:$anko_version"
+    implementation 'com.github.intmainreturn00:grapi:1.1'
+
 
 }
 
