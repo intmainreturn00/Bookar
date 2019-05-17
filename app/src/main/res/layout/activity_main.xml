@@ -8,13 +8,22 @@
 
     <fragment
         android:id="@+id/sceneform_fragment"
-        android:name="com.google.ar.sceneform.ux.ArFragment"
+        android:name="com.intmainreturn00.arbooks.WritingArFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="123"
+        android:textColor="@color/primaryColor"
+        android:textSize="52sp" />
+
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/add"
@@ -28,5 +37,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/capture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/secondaryColor"
+        android:src="@drawable/camera"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/add" />
+
 
 </android.support.constraint.ConstraintLayout>

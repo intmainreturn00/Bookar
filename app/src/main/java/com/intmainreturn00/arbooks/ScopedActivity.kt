@@ -19,8 +19,8 @@ abstract class ScopedAppActivity: AppCompatActivity(), CoroutineScope {
     }
 
     override fun onDestroy() {
+        println("@ onDestroy")
         super.onDestroy()
-        //job.cancel()
-        job.cancelChildren()
+        job.cancel()
     }
 }

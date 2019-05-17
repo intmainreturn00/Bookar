@@ -18,29 +18,22 @@ import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
-import com.intmainreturn00.grapi.Order
-import com.intmainreturn00.grapi.Review
-import com.intmainreturn00.grapi.Sort
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.anko.browse
-import org.michaelevans.colorart.library.ColorArt
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.util.*
+import kotlin.random.Random
 
 
 class MainActivity : ScopedAppActivity() {
 
     private lateinit var fragment: ArFragment
     private lateinit var bookModel: ModelRenderable
-
-    private val books = mutableListOf<ARBookWithCover>()
-
-    val modelSize = Vector3(0.14903799f, 0.038000144f, 0.2450379f) // size of the obj model [in meters]
+    private lateinit var books: MutableList<ARBook>
+    private val modelSize = Vector3(0.14903799f, 0.038000144f, 0.2450379f) // size of the obj model [in meters]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +43,6 @@ class MainActivity : ScopedAppActivity() {
 
         fragment.arSceneView.scene.addOnUpdateListener { frameTime ->
             fragment.onUpdate(frameTime)
-            //onUpdate()
         }
 
         add.setOnClickListener {
@@ -61,7 +53,11 @@ class MainActivity : ScopedAppActivity() {
             }
         }
 
-
+        capture.setOnClickListener {
+            capture.hide()
+            takePhoto(this@MainActivity, fragment)
+            capture.show()
+        }
 
         if (!grapi.isLoggedIn()) {
             launch {
@@ -69,72 +65,63 @@ class MainActivity : ScopedAppActivity() {
                 browse(grapi.getAuthorizationUrl())
             }
         } else {
-            loadResources()
+            launch { loadResources() }
         }
 
         launch {
             grapi.loginEnd(intent) { ok ->
                 if (ok) {
-                    loadResources()
+                    launch { loadResources() }
                 }
             }
         }
 
+        //launch { loadResources() }
+
+        //println("@ ${generateFilename()}")
+
     }
 
 
-    fun loadResources() {
-        launch {
-            bookModel = ModelRenderable.builder()
-                .setSource(fragment.context, Uri.parse("book1.sfb"))
-                .build().await()
+    private suspend fun loadResources() {
+        bookModel = ModelRenderable.builder()
+            .setSource(fragment.context, Uri.parse("book1.sfb"))
+            .build().await()
 
-            val userId = grapi.getUserId()
-            val bookModels = mutableListOf<BookModel>()
-            val reviews = grapi.getAllReviews(userId.id/*, sort = Sort.DATE_ADDED, order = Order.ASCENDING*/)
+        val userId = grapi.getUserId()
+        val bookModels = mutableListOf<BookModel>()
+        val reviews = grapi.getAllReviews(userId.id/*, sort = Sort.DATE_ADDED, order = Order.ASCENDING*/)
 
-//            val sortedReviews =
-//                reviews.sortedWith(
-//                compareByDescending<Review> { it.rating ?: -1 }
-//                    .thenByDescending { it.readCount ?: -1 }
-//                    .thenByDescending { it.book.numPages }
-//                    .thenByDescending { parseDate(it.readAt) }
-//            )
+        withContext(Dispatchers.Default) {
             val sortedReviews = reviews.sortedWith(
                 compareBy(
                     { it.readCount },
                     { it.rating }
                 )
-            )
+            )//.takeLast(20)
 
             for (review in sortedReviews) {
-                if (!review.book.imageUrl.contains("nophoto")) {
-                    bookModels.add(BookModel(review.book.numPages, review.book.imageUrlSmall))
-                } else {
-                    println(review.book.title + " " + review.book.id)
-                    if (review.book.isbn.isNotEmpty()) {
-                        bookModels.add(
-                            BookModel(
-                                review.book.numPages,
-                                "https://covers.openlibrary.org/b/isbn/${review.book.isbn}-M.jpg"
-                            )
-                        )
-                    } else {
+                when {
+                    !review.book.imageUrl.contains("nophoto") ->
                         bookModels.add(BookModel(review.book.numPages, review.book.imageUrl))
-                    }
+
+                    review.book.isbn.isNotEmpty() ->
+                        bookModels.add(BookModel(review.book.numPages, makeOpenlibLink(review.book.isbn)))
+
+                    else -> bookModels.add(BookModel(review.book.numPages, ""))
                 }
             }
 
+            books = fillBooks(this@MainActivity, bookModels)
 
-//            repeat(20) {
-//                println(sortedReviews[sortedReviews.size - it - 1].book.title + " " + sortedReviews[sortedReviews.size - it - 1].readCount)
-//            }
-
-            fillBooks(bookModels, books)
-            println("models loaded")
         }
+
+        println("@ models loaded")
+        text.text = "loaded!"
         add.show()
     }
+
+
 
     private fun isHitPlane(): Anchor? {
         val frame = fragment.arSceneView.arFrame
@@ -155,71 +142,111 @@ class MainActivity : ScopedAppActivity() {
     private suspend fun placeBooks(anchor: Anchor) {
         val anchorNode = AnchorNode(anchor)
         fragment.arSceneView.scene.addChild(anchorNode)
-
-
-        for (book in books) {
-            val node = makeBookNode(bookModel.makeCopy(), book.size, book.position, book.rotation)
-            val coverRenderable = loadCoverRenderable(this)
-            val cover = downloadBitmap2(this, book.coverUrl)!!
-            addCover(cover, node, (node.renderable as ModelRenderable).collisionShape as Box, coverRenderable)
-            paintBook(cover, node)
-            node.setParent(anchorNode)
-            println("add another book")
-        }
-
-
         fragment.arSceneView.planeRenderer.isVisible = false
 
+        val layer = MutableList<MutableList<Node>>(2) { mutableListOf() }
+        var counter = 0
+        for (book in books) {
+            val bookNode = makeBookNode(bookModel.makeCopy(), book)
+            addCover(book, bookNode)
+            layer[counter / 16].add(bookNode)
+
+            bookNode.setParent(anchorNode)
+            counter++
+
+            if (counter == 16 * 2 - 1) {
+                // clean up overlapped 0 layer
+                for (node in layer[0]) {
+                    if (node.children.size > 0) {
+                        node.removeChild(node.children[0])
+                    }
+                }
+                layer.removeAt(0)
+                layer.add(mutableListOf())
+                counter = 0
+            }
+        }
+
         add.hide()
+        capture.show()
+
     }
 
 
-    fun makeBookNode(model: ModelRenderable, size: Vector3, position: Vector3, rotation: Quaternion): Node {
-        val book = Node()
-        book.renderable = model
+    private fun makeBookNode(model: ModelRenderable, book: ARBook): Node {
+        val bookNode = Node()
+        bookNode.renderable = model
 
-        book.localScale = Vector3(
-            size.x / modelSize.x,
-            size.y / modelSize.y,
-            size.z / modelSize.z
+        bookNode.localScale = Vector3(
+            book.size.x / modelSize.x,
+            book.size.y / modelSize.y,
+            book.size.z / modelSize.z
         )
-        book.localRotation = rotation
-        book.localPosition = position
-        return book
+        bookNode.localRotation = book.rotation
+        bookNode.localPosition = book.position
+        return bookNode
     }
 
 
-    fun paintBook(btm: Bitmap, node: Node) {
-        val palette = ColorArt(btm)
+    private suspend fun addCover(book: ARBook, parent: Node) : Node? {
+        val btm = downloadCover(this@MainActivity, book)
+        if (btm != null) {
+            val coverNode = Node()
+            coverNode.renderable = loadCoverRenderable(this)
+            val parentBox = (parent.renderable as ModelRenderable).collisionShape as Box
+            val img = (coverNode.renderable as ViewRenderable).view as ImageView
+
+            coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
+
+            val realXm = book.width / dpToPix(250f)
+            val realYm = book.height / dpToPix(250f)
+
+            img.setImageBitmap(btm)
+
+            coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
+            coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
+
+            coverNode.setParent(parent)
+
+            paintBook(btm, parent)
+
+            return coverNode
+        } else {
+            paintBook(parent)
+            return null
+        }
+    }
+
+    private suspend fun paintBook(btm: Bitmap, node: Node) {
+//        val palette: ColorArt = withContext(Dispatchers.Default) {
+//            ColorArt(btm)
+//        }
+
+        val backgroundColor: Int = btm.getPixel(Random.nextInt(btm.width), Random.nextInt(btm.height))
+        //val backgroundColor: Int = palette.backgroundColor
 
         node.renderable = node.renderable!!//.makeCopy()
         val mat1 = node.renderable!!.getMaterial(1)//.makeCopy()
-        mat1.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(palette.backgroundColor))
+        mat1.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(backgroundColor))
         node.renderable!!.setMaterial(1, mat1)
 
         val mat2 = node.renderable!!.getMaterial(2)//.makeCopy()
-        mat2.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(palette.backgroundColor))
+        mat2.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(backgroundColor))
         node.renderable!!.setMaterial(2, mat1)
     }
 
 
-    fun addCover(btm: Bitmap, parent: Node, parentBox: Box, model: ViewRenderable) {
-        val coverNode = Node()
-        coverNode.renderable = model
+    private fun paintBook(node: Node) {
+        val backgroundColor: Int = makeRandomColor()
 
-        val img = (coverNode.renderable as ViewRenderable).view as ImageView
-        img.setImageBitmap(btm)
+        node.renderable = node.renderable!!//.makeCopy()
+        val mat1 = node.renderable!!.getMaterial(1)//.makeCopy()
+        mat1.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(backgroundColor))
+        node.renderable!!.setMaterial(1, mat1)
 
-        coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
-
-        val realXm = btm.width / dpToPix(250f)
-        val realYm = btm.height / dpToPix(250f)
-
-        coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
-
-        coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
-
-        coverNode.setParent(parent)
+        val mat2 = node.renderable!!.getMaterial(2)//.makeCopy()
+        mat2.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(backgroundColor))
+        node.renderable!!.setMaterial(2, mat1)
     }
 
 
