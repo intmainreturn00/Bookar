@@ -2,12 +2,16 @@ package com.intmainreturn00.arbooks
 
 import android.content.Context
 import android.graphics.Color
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ViewRenderable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.michaelevans.colorart.library.ColorArt
 import kotlin.random.Random
 
 
@@ -19,7 +23,8 @@ data class ARBook(
     val rotation: Quaternion,
     val coverUrl: String,
     var width: Int = 0,
-    var height: Int = 0
+    var height: Int = 0,
+    var coverColor: Int = Color.WHITE
 )
 
 
@@ -36,15 +41,28 @@ suspend fun fillBooks(context: Context, models: List<BookModel>): MutableList<AR
 
 
 suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
+    println("@prefetching covers")
     withContext(Dispatchers.IO) {
         for (book in books) {
             val btm = downloadCover(context, book)
             btm?.let {
                 book.width = it.width
                 book.height = it.height
+                log("@")
             }
         }
     }
+
+    println("@calculate colors for covers")
+    withContext(Dispatchers.Default) {
+        for (book in books) {
+            val btm = downloadCover(context, book)
+            btm?.let {
+                book.coverColor = ColorArt(btm).backgroundColor
+            }
+        }
+    }
+
 }
 
 
@@ -56,7 +74,8 @@ suspend fun downloadCover(context: Context, book: ARBook) = withContext(Dispatch
             GlideApp.with(context)
                 .asBitmap()
                 .load(book.coverUrl)
-                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                //.skipMemoryCache(true)
                 .placeholder(R.drawable.dcover2)
                 .error(R.drawable.dcover2)
                 .submit().get()
@@ -168,3 +187,6 @@ fun makeRandomColor() =
         17 -> Color.parseColor("#607D8B")
         else -> Color.WHITE
     }
+
+
+fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")

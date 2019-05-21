@@ -25,6 +25,7 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.browse
+import org.michaelevans.colorart.library.ColorArt
 import kotlin.random.Random
 
 
@@ -38,6 +39,8 @@ class MainActivity : ScopedAppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        System.setProperty("kotlinx.coroutines.debug", "on")
 
         fragment = sceneform_fragment as ArFragment
 
@@ -208,7 +211,7 @@ class MainActivity : ScopedAppActivity() {
 
             coverNode.setParent(parent)
 
-            paintBook(btm, parent)
+            paintBook(book, btm, parent)
 
             return coverNode
         } else {
@@ -217,13 +220,9 @@ class MainActivity : ScopedAppActivity() {
         }
     }
 
-    private suspend fun paintBook(btm: Bitmap, node: Node) {
-//        val palette: ColorArt = withContext(Dispatchers.Default) {
-//            ColorArt(btm)
-//        }
-
-        val backgroundColor: Int = btm.getPixel(Random.nextInt(btm.width), Random.nextInt(btm.height))
-        //val backgroundColor: Int = palette.backgroundColor
+    private suspend fun paintBook(book: ARBook, btm: Bitmap, node: Node) {
+//        val backgroundColor: Int = btm.getPixel(Random.nextInt(btm.width), Random.nextInt(btm.height))
+        val backgroundColor: Int = book.coverColor
 
         node.renderable = node.renderable!!//.makeCopy()
         val mat1 = node.renderable!!.getMaterial(1)//.makeCopy()
