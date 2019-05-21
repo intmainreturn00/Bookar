@@ -58,10 +58,12 @@ dependencies {
 
     implementation "org.jetbrains.anko:anko-commons:$anko_version"
     implementation 'com.github.intmainreturn00:grapi:1.1'
+    implementation 'com.google.firebase:firebase-core:16.0.9'
 
 
 }
 
+apply plugin: 'com.google.gms.google-services'
 
 apply plugin: 'com.google.ar.sceneform.plugin'
 
