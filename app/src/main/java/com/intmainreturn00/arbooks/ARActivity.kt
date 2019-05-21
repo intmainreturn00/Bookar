@@ -18,22 +18,15 @@ import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
-import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.jetbrains.anko.browse
-import org.michaelevans.colorart.library.ColorArt
-import kotlin.random.Random
 
 
-class MainActivity : ScopedAppActivity() {
+class ARActivity : ScopedAppActivity() {
 
     private lateinit var fragment: ArFragment
     private lateinit var bookModel: ModelRenderable
-    private lateinit var books: MutableList<ARBook>
     private val modelSize = Vector3(0.14903799f, 0.038000144f, 0.2450379f) // size of the obj model [in meters]
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,30 +51,11 @@ class MainActivity : ScopedAppActivity() {
 
         capture.setOnClickListener {
             capture.hide()
-            takePhoto(this@MainActivity, fragment)
+            takePhoto(this@ARActivity, fragment)
             capture.show()
         }
 
-        if (!grapi.isLoggedIn()) {
-            launch {
-                grapi.loginStart()
-                browse(grapi.getAuthorizationUrl())
-            }
-        } else {
-            launch { loadResources() }
-        }
-
-        launch {
-            grapi.loginEnd(intent) { ok ->
-                if (ok) {
-                    launch { loadResources() }
-                }
-            }
-        }
-
-        //launch { loadResources() }
-
-        //println("@ ${generateFilename()}")
+        launch { loadResources() }
 
     }
 
@@ -91,36 +65,7 @@ class MainActivity : ScopedAppActivity() {
             .setSource(fragment.context, Uri.parse("book1.sfb"))
             .build().await()
 
-        val userId = grapi.getUserId()
-        val bookModels = mutableListOf<BookModel>()
-        val reviews = grapi.getAllReviews(userId.id/*, sort = Sort.DATE_ADDED, order = Order.ASCENDING*/)
-
-        withContext(Dispatchers.Default) {
-            val sortedReviews = reviews.sortedWith(
-                compareBy(
-                    { it.readCount },
-                    { it.rating }
-                )
-            )//.takeLast(20)
-
-            for (review in sortedReviews) {
-                when {
-                    !review.book.imageUrl.contains("nophoto") ->
-                        bookModels.add(BookModel(review.book.numPages, review.book.imageUrl))
-
-                    review.book.isbn.isNotEmpty() ->
-                        bookModels.add(BookModel(review.book.numPages, makeOpenlibLink(review.book.isbn)))
-
-                    else -> bookModels.add(BookModel(review.book.numPages, ""))
-                }
-            }
-
-            books = fillBooks(this@MainActivity, bookModels)
-
-        }
-
         println("@ models loaded")
-        text.text = "loaded!"
         add.show()
     }
 
@@ -149,7 +94,7 @@ class MainActivity : ScopedAppActivity() {
 
         val layer = MutableList<MutableList<Node>>(2) { mutableListOf() }
         var counter = 0
-        for (book in books) {
+        for (book in App.books) {
             val bookNode = makeBookNode(bookModel.makeCopy(), book)
             addCover(book, bookNode)
             layer[counter / 16].add(bookNode)
@@ -192,7 +137,7 @@ class MainActivity : ScopedAppActivity() {
 
 
     private suspend fun addCover(book: ARBook, parent: Node) : Node? {
-        val btm = downloadCover(this@MainActivity, book)
+        val btm = downloadCover(this@ARActivity, book)
         if (btm != null) {
             val coverNode = Node()
             coverNode.renderable = loadCoverRenderable(this)
@@ -220,8 +165,7 @@ class MainActivity : ScopedAppActivity() {
         }
     }
 
-    private suspend fun paintBook(book: ARBook, btm: Bitmap, node: Node) {
-//        val backgroundColor: Int = btm.getPixel(Random.nextInt(btm.width), Random.nextInt(btm.height))
+    private fun paintBook(book: ARBook, btm: Bitmap, node: Node) {
         val backgroundColor: Int = book.coverColor
 
         node.renderable = node.renderable!!//.makeCopy()

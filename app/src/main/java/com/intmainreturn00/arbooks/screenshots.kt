@@ -84,8 +84,8 @@ fun takePhoto(context: Context, arFragment: ArFragment) {
 //                val photoFile = File(filename)
 //
 //                val photoURI = FileProvider.getUriForFile(
-//                    this@MainActivity,
-//                    this@MainActivity.getPackageName() + ".ar.codelab.name.provider",
+//                    this@ARActivity,
+//                    this@ARActivity.getPackageName() + ".ar.codelab.name.provider",
 //                    photoFile
 //                )
 //                val intent = Intent(Intent.ACTION_VIEW, photoURI)
@@ -97,7 +97,7 @@ fun takePhoto(context: Context, arFragment: ArFragment) {
 //            snackbar.show()
         } else {
 //            val toast = Toast.makeText(
-//                this@MainActivity,
+//                this@ARActivity,
 //                "Failed to copyPixels: $copyResult", Toast.LENGTH_LONG
 //            )
 //            toast.show()

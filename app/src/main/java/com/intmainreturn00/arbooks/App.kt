@@ -8,6 +8,8 @@ class App : Application() {
     companion object {
         lateinit var instance: App
             private set
+
+        lateinit var books: MutableList<ARBook>
     }
 
     override fun onCreate() {

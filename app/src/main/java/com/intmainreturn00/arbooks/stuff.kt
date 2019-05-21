@@ -1,6 +1,7 @@
 package com.intmainreturn00.arbooks
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.ar.sceneform.math.Quaternion
@@ -33,14 +34,7 @@ suspend fun loadCoverRenderable(context: Context) = ViewRenderable.builder()
     .build().await()
 
 
-suspend fun fillBooks(context: Context, models: List<BookModel>): MutableList<ARBook> {
-    val books = makeGrid(models)
-    prefetchCovers(context, books)
-    return books
-}
-
-
-suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
+suspend fun prefetchCovers(context: Context, books: List<ARBook>, update: (b: Bitmap?, color: Int) -> Unit) {
     println("@prefetching covers")
     withContext(Dispatchers.IO) {
         for (book in books) {
@@ -48,21 +42,15 @@ suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
             btm?.let {
                 book.width = it.width
                 book.height = it.height
-                log("@")
+                withContext(Dispatchers.Default) {
+                    book.coverColor = ColorArt(btm).backgroundColor
+                }
+            }
+            withContext(Dispatchers.Main) {
+                update(btm, book.coverColor)
             }
         }
     }
-
-    println("@calculate colors for covers")
-    withContext(Dispatchers.Default) {
-        for (book in books) {
-            val btm = downloadCover(context, book)
-            btm?.let {
-                book.coverColor = ColorArt(btm).backgroundColor
-            }
-        }
-    }
-
 }
 
 
@@ -182,9 +170,8 @@ fun makeRandomColor() =
         12 -> Color.parseColor("#FFC107")
         13 -> Color.parseColor("#FF9800")
         14 -> Color.parseColor("#FF5722")
-        15 -> Color.parseColor("#795548")
-        16 -> Color.parseColor("#9E9E9E")
-        17 -> Color.parseColor("#607D8B")
+        15 -> Color.parseColor("#9E9E9E")
+        16 -> Color.parseColor("#607D8B")
         else -> Color.WHITE
     }
 

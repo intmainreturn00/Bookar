@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">ARBooks</string>
+    <string name="login_button">GoodReads логин</string>
+    <string name="intro">Привет! Чтобы сделать крутую фотку твоей библиотеки, давай подключим аккаунт GoodReads:</string>
+    <string name="loading_gr">Аккаунт GoodReads подключен! Скачиваю данные по книжкам…</string>
+    <string name="loading_done">Получилось! На вашей полке #.</string>
+    <string name="loading_covers">Начинаю скачивать обложки…</string>
+    <string name="sorry">Похоже вам нужно больше читать) Добавьте что-нибудь в профиль и возвращайтесь!</string>
+
+    <plurals name="books">
+        <item quantity="one">%d книга</item>
+        <item quantity="other">%d книг</item>
+        <item quantity="few">%d книги</item>
+        <item quantity="many">%d книг</item>
+    </plurals>
+
+    <string name="ready">Все ресурсы загружены! Перейдем в AR режим?</string>
+</resources>

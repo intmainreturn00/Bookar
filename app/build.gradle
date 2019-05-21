@@ -20,7 +20,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders = [host:"goodreads", scheme:"oauth"]
+        manifestPlaceholders = [host: "goodreads", scheme: "oauth"]
     }
     buildTypes {
         release {
@@ -53,7 +53,6 @@ dependencies {
 
     implementation 'com.android.support:design:28.0.0'
     implementation 'org.michaelevans.colorart:library:0.0.3'
-    //implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
 
@@ -65,14 +64,6 @@ dependencies {
 
 
 apply plugin: 'com.google.ar.sceneform.plugin'
-
-
-
-
-
-
-
-
 
 
 sceneform.asset('sampledata/book1.obj',
