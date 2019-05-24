@@ -3,7 +3,7 @@
     <string name="login_button">GoodReads Login</string>
     <string name="intro">Welcome! Pair GoodReads account to make some pretty pictures of your library</string>
     <string name="loading_gr">GoodReads account added! Loading books…</string>
-    <string name="loading_done">Done! Looks like you have # books.</string>
+    <string name="loading_done">Done! Looks like you have #.</string>
     <string name="loading_covers">Loading covers…</string>
     <string name="sorry">You are not much into books? Add some and come back!</string>
 
