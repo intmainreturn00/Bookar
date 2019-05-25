@@ -14,5 +14,14 @@
         <item quantity="many">%d книг</item>
     </plurals>
 
+    <plurals name="pages">
+        <item quantity="one">%d страница</item>
+        <item quantity="other">%d страниц</item>
+        <item quantity="few">%d страницы</item>
+        <item quantity="many">%d страниц</item>
+    </plurals>
+
+    <string name="pages">страниц</string>
+
     <string name="ready">Все ресурсы загружены! Перейдем в AR режим?</string>
 </resources>

@@ -84,9 +84,10 @@ class LoginActivity : ScopedAppActivity() {
                         { it.readCount },
                         { it.rating }
                     )
-                )
+                ).takeLast(20)
 
                 for (review in sortedReviews) {
+                    App.totalPages += review.book.numPages ?: 0
                     when {
                         !review.book.imageUrl.contains("nophoto") ->
                             bookModels.add(BookModel(review.book.numPages, review.book.imageUrl))

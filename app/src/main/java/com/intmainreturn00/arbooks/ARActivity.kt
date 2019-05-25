@@ -3,6 +3,7 @@ package com.intmainreturn00.arbooks
 
 import android.graphics.Bitmap
 import android.graphics.Point
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
@@ -41,6 +42,19 @@ class ARActivity : ScopedAppActivity() {
             fragment.onUpdate(frameTime)
         }
 
+        stats.typeface = Typeface.createFromAsset(assets, "fonts/FredokaOne-Regular.ttf")
+        hashtag.typeface = Typeface.createFromAsset(assets, "fonts/FredokaOne-Regular.ttf")
+
+        val pagesFormatted =
+            if (App.totalPages > 1000) {
+                (App.totalPages / 1000).toString() + "k " + resources.getString(R.string.pages)
+            } else {
+                resources.getQuantityString(R.plurals.pages, App.totalPages, App.totalPages)
+            }
+
+        stats.text = "${resources.getQuantityString(R.plurals.books, App.books.size, App.books.size)}" +
+                "\n$pagesFormatted"
+
         add.setOnClickListener {
             isHitPlane()?.let {
                 launch {
@@ -51,7 +65,7 @@ class ARActivity : ScopedAppActivity() {
 
         capture.setOnClickListener {
             capture.hide()
-            takePhoto(this@ARActivity, fragment)
+            takePhoto(this@ARActivity, fragment, stats_card, hashtag)
             capture.show()
         }
 
@@ -68,7 +82,6 @@ class ARActivity : ScopedAppActivity() {
         println("@ models loaded")
         add.show()
     }
-
 
 
     private fun isHitPlane(): Anchor? {
@@ -91,6 +104,7 @@ class ARActivity : ScopedAppActivity() {
         val anchorNode = AnchorNode(anchor)
         fragment.arSceneView.scene.addChild(anchorNode)
         fragment.arSceneView.planeRenderer.isVisible = false
+        add.hide()
 
         val layer = MutableList<MutableList<Node>>(2) { mutableListOf() }
         var counter = 0
@@ -115,7 +129,7 @@ class ARActivity : ScopedAppActivity() {
             }
         }
 
-        add.hide()
+
         capture.show()
 
     }
@@ -136,7 +150,7 @@ class ARActivity : ScopedAppActivity() {
     }
 
 
-    private suspend fun addCover(book: ARBook, parent: Node) : Node? {
+    private suspend fun addCover(book: ARBook, parent: Node): Node? {
         val btm = downloadCover(this@ARActivity, book)
         if (btm != null) {
             val coverNode = Node()
@@ -146,8 +160,8 @@ class ARActivity : ScopedAppActivity() {
 
             coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
 
-            val realXm = book.width / dpToPix(250f)
-            val realYm = book.height / dpToPix(250f)
+            val realXm = book.width / dpToPix(this,250f)
+            val realYm = book.height / dpToPix(this, 250f)
 
             img.setImageBitmap(btm)
 
@@ -198,10 +212,4 @@ class ARActivity : ScopedAppActivity() {
         return Point(vw.width / 2, vw.height / 2)
     }
 
-    private fun dpToPix(dp: Float): Float =
-        TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp,
-            resources.displayMetrics
-        )
 }

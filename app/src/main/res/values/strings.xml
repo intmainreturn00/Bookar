@@ -13,5 +13,13 @@
         <item quantity="other">%d books</item>
     </plurals>
 
+    <plurals name="pages">
+        <item quantity="one">one page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
+
+    <string name="pages">pages</string>
+
+
     <string name="ready">All resources ready! Lets jump into AR?</string>
 </resources>
