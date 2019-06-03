@@ -1,12 +1,9 @@
 package com.intmainreturn00.arbooks
 
 
-import android.graphics.Bitmap
-import android.graphics.Point
-import android.graphics.Typeface
+import android.graphics.*
 import android.net.Uri
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import com.google.ar.core.Anchor
@@ -110,6 +107,7 @@ class ARActivity : ScopedAppActivity() {
         var counter = 0
         for (book in App.books) {
             val bookNode = makeBookNode(bookModel.makeCopy(), book)
+
             addCover(book, bookNode)
             layer[counter / 16].add(bookNode)
 
@@ -150,12 +148,14 @@ class ARActivity : ScopedAppActivity() {
     }
 
 
+
     private suspend fun addCover(book: ARBook, parent: Node): Node? {
         val btm = downloadCover(this@ARActivity, book)
         if (btm != null) {
             val coverNode = Node()
             coverNode.renderable = loadCoverRenderable(this)
             val parentBox = (parent.renderable as ModelRenderable).collisionShape as Box
+
             val img = (coverNode.renderable as ViewRenderable).view as ImageView
 
             coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
@@ -170,7 +170,7 @@ class ARActivity : ScopedAppActivity() {
 
             coverNode.setParent(parent)
 
-            paintBook(book, btm, parent)
+            paintBook(book, parent)
 
             return coverNode
         } else {
@@ -179,17 +179,19 @@ class ARActivity : ScopedAppActivity() {
         }
     }
 
-    private fun paintBook(book: ARBook, btm: Bitmap, node: Node) {
-        val backgroundColor: Int = book.coverColor
 
-        node.renderable = node.renderable!!//.makeCopy()
-        val mat1 = node.renderable!!.getMaterial(1)//.makeCopy()
-        mat1.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(backgroundColor))
+    private fun paintBook(book: ARBook, node: Node) {
+        val backgroundColor = com.google.ar.sceneform.rendering.Color(book.coverColor)
+
+//        node.renderable = node.renderable!!//.makeCopy()
+        val mat1 = node.renderable!!.getMaterial(1)
+        mat1.setFloat3("baseColorTint", backgroundColor)
         node.renderable!!.setMaterial(1, mat1)
 
-        val mat2 = node.renderable!!.getMaterial(2)//.makeCopy()
-        mat2.setFloat3("baseColorTint", com.google.ar.sceneform.rendering.Color(backgroundColor))
-        node.renderable!!.setMaterial(2, mat1)
+        val mat2 = node.renderable!!.getMaterial(2)
+        mat2.setFloat3("baseColorTint", backgroundColor)
+        node.renderable!!.setMaterial(2, mat2)
+
     }
 
 

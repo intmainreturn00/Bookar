@@ -5,5 +5,4 @@
     android:layout_height="wrap_content"
     android:src="@drawable/dcover2">
 
-
 </ImageView>

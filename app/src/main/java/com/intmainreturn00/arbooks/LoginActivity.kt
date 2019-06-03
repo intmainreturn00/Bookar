@@ -50,6 +50,9 @@ class LoginActivity : ScopedAppActivity() {
 
     }
 
+
+
+
     private fun loadData() {
         launch {
             login.visibility = INVISIBLE
@@ -84,7 +87,7 @@ class LoginActivity : ScopedAppActivity() {
                         { it.readCount },
                         { it.rating }
                     )
-                ).takeLast(20)
+                )//.takeLast(17)
 
                 for (review in sortedReviews) {
                     App.totalPages += review.book.numPages ?: 0
