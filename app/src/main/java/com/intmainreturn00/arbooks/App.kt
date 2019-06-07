@@ -10,7 +10,6 @@ class App : Application() {
             private set
 
         lateinit var books: MutableList<ARBook>
-        var totalPages: Int = 0
     }
 
     override fun onCreate() {
