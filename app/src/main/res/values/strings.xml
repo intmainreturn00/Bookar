@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ARBooks</string>
+    <string name="app_name">BOOKAR</string>
     <string name="login_button">GoodReads Login</string>
     <string name="intro">Welcome! Pair GoodReads account to make some pretty pictures of your library</string>
     <string name="loading_gr">GoodReads account added! Loading books…</string>

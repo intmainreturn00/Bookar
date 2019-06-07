@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ARBooks</string>
+    <string name="app_name">BOOKAR</string>
     <string name="login_button">GoodReads логин</string>
     <string name="intro">Привет! Чтобы сделать крутую фотку твоей библиотеки, давай подключим аккаунт GoodReads:</string>
     <string name="loading_gr">Аккаунт GoodReads подключен! Скачиваю данные по книжкам…</string>
