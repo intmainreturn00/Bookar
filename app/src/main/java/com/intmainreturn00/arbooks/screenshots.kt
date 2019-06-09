@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.content.Intent
 import android.net.Uri
-import android.support.v4.content.ContextCompat.startActivity
+import androidx.core.content.ContextCompat.startActivity
 import android.provider.MediaStore
 import android.R.layout
 import android.content.res.Resources

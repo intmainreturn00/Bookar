@@ -16,7 +16,7 @@ import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_ar.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 
@@ -29,7 +29,7 @@ class ARActivity : ScopedAppActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_ar)
 
         System.setProperty("kotlinx.coroutines.debug", "on")
 
