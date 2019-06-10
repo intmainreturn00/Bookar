@@ -34,7 +34,7 @@ suspend fun loadCoverRenderable(context: Context) = ViewRenderable.builder()
 suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
     withContext(Dispatchers.IO) {
         for (book in books) {
-            val btm = downloadCover(context, book)
+            val btm = downloadImage(context, book.coverUrl)
             btm?.let {
                 book.coverWidth = it.width
                 book.coverHeight = it.height
@@ -47,9 +47,9 @@ suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
 }
 
 
-suspend fun downloadCover(context: Context, book: ARBook) = withContext(Dispatchers.IO) {
-    if (book.coverUrl.isNotEmpty()) {
-        GlideApp.with(context).asBitmap().load(book.coverUrl)
+suspend fun downloadImage(context: Context, url: String) = withContext(Dispatchers.IO) {
+    if (url.isNotEmpty()) {
+        GlideApp.with(context).asBitmap().load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL).submit().get()
     } else {
         null

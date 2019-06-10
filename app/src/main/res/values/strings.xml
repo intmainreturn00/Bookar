@@ -16,10 +16,9 @@
     <string name="pages">pages</string>
     <string name="intro">"Spent so much time trying to imagine,\nwhat was written in the books,\n but can you imagine\n how many books read?</string>
     <string name="login_error">GoodReads login failed :(</string>
+    <string name="loading">Loading books…</string>
+    <string name="loading_from">Loading books from %1$s shelf…</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="loading">Loading books...</string>
 
 
 </resources>

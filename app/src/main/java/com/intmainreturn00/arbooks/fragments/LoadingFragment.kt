@@ -6,8 +6,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.intmainreturn00.arbooks.BookModel
-
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.intmainreturn00.arbooks.BooksViewModel
 import com.intmainreturn00.arbooks.R
 import com.intmainreturn00.arbooks.ScopedFragment
 import com.intmainreturn00.grapi.grapi
@@ -31,28 +32,34 @@ class LoadingFragment : ScopedFragment() {
 
         launch {
             if (grapi.isLoggedIn()) {
-                loadData()
-            } else if (activity?.intent != null) {
+                prefetch()
+            } else if (activity?.intent?.data != null) {
                 grapi.loginEnd(activity?.intent!!) { ok ->
                     if (ok) {
-                        loadData()
+                        prefetch()
                     }
                 }
             }
         }
 
+        ViewModelProviders.of(this@LoadingFragment).get(BooksViewModel::class.java).currentShelf.observe(
+            this,
+            Observer { currentShelf ->
+                loading.text = String.format(resources.getString(R.string.loading_from), currentShelf)
+            })
+
+        ViewModelProviders.of(this@LoadingFragment).get(BooksViewModel::class.java).loadingDone.observe(
+            this,
+            Observer { done ->
+                if (done) {
+
+                }
+            })
+
     }
 
 
-    fun loadData() {
-        launch {
-            val userId = grapi.getUserId()
-            val bookModels = mutableListOf<BookModel>()
-            //val reviews = grapi.getAllReviews(userId.id)
-            val shelves = grapi.getUserShelves(1, userId.id)
-
-            println("@")
-        }
-    }
+    private fun prefetch() =
+        ViewModelProviders.of(this@LoadingFragment).get(BooksViewModel::class.java).loadProfileData()
 
 }

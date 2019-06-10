@@ -118,7 +118,7 @@ class ARActivity : ScopedAppActivity() {
     }
 
     private suspend fun addCover(book: ARBook, bookNode: Node) {
-        val btm = downloadCover(this@ARActivity, book)
+        val btm = downloadImage(this@ARActivity, book.coverUrl)
         if (btm != null) {
             val coverNode = Node()
             coverNode.renderable = loadCoverRenderable(this)
