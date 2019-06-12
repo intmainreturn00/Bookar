@@ -3,14 +3,14 @@
     <string name="login_button">Login with GoodReads</string>
 
     <plurals name="books">
-        <item quantity="zero">zero book</item>
-        <item quantity="one">one book</item>
-        <item quantity="other">%d books</item>
+        <item quantity="zero">book</item>
+        <item quantity="one">book</item>
+        <item quantity="other">books</item>
     </plurals>
 
     <plurals name="pages">
-        <item quantity="one">one page</item>
-        <item quantity="other">%d pages</item>
+        <item quantity="one">page</item>
+        <item quantity="other">pages</item>
     </plurals>
 
     <string name="pages">pages</string>
@@ -18,7 +18,6 @@
     <string name="login_error">GoodReads login failed :(</string>
     <string name="loading">Loading books…</string>
     <string name="loading_from">Loading books from %1$s shelf…</string>
-
 
 
 </resources>

@@ -13,12 +13,14 @@
         <action
             android:id="@+id/action_main_to_login"
             app:destination="@id/loginFragment"
-            app:popUpTo="@+id/mainFragment"
+            app:launchSingleTop="false"
+            app:popUpTo="@+id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_main_to_loading"
             app:destination="@id/loadingFragment"
-            app:popUpTo="@+id/mainFragment"
+            app:launchSingleTop="false"
+            app:popUpTo="@+id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
 
@@ -35,6 +37,17 @@
         <deepLink
             android:id="@+id/deepLink"
             app:uri="oauth://goodreads/" />
+        <action
+            android:id="@+id/action_loading_to_shelves"
+            app:destination="@id/shelvesFragment"
+            app:launchSingleTop="false"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
+    <fragment
+        android:id="@+id/shelvesFragment"
+        android:name="com.intmainreturn00.arbooks.fragments.ShelvesFragment"
+        android:label="fragment_shelves"
+        tools:layout="@layout/fragment_shelves" />
 
 </navigation>

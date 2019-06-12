@@ -11,33 +11,37 @@ fun <T> MutableLiveData<T>.notifyObserver() {
 
 class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
-    val userId = MutableLiveData<UserId>()
-    val user = MutableLiveData<User>()
-    val shelves = MutableLiveData<List<Shelf>>()
-    val reviews = MutableLiveData<MutableMap<String, List<Review>>>()
+    lateinit var userId: UserId
+    lateinit var user: User
+    lateinit var shelves: List<Shelf>
+    val reviews = HashMap<String, List<Review>>()
 
-    val currentShelf = MutableLiveData<String>()
-    val loadingDone = MutableLiveData<Boolean>()
+    val currentLoadingShelf = MutableLiveData<String>()
+    val booksLoadingDone = MutableLiveData<Boolean>()
 
-    init {
-        reviews.value = HashMap()
-    }
+    var numBooks = 0
+    var numPages = 0
+
 
     fun loadProfileData() {
         viewModelScope.launch {
-            userId.value = grapi.getUserId()
-            user.value = grapi.getUser(userId.value!!.id)
-            downloadImage(getApplication(), user.value?.imageUrl ?: "")
-            shelves.value = grapi.getAllShelves(userId.value!!.id)
+            userId = grapi.getUserId()
+            user = grapi.getUser(userId.id)
+            shelves = grapi.getAllShelves(userId.id).takeLast(1)
 
-            for (shelf in shelves.value!!) {
-                currentShelf.value = shelf.name
-                reviews.value?.put(shelf.name, grapi.getAllReviews(userId.value!!.id, shelf.name))
-                reviews.notifyObserver()
+            for (shelf in shelves) {
+                currentLoadingShelf.value = shelf.name
+                val currentReviews = grapi.getAllReviews(userId.id, shelf.name)
+                currentReviews.forEach {
+                    numBooks += 1
+                    numPages += it.book.numPages ?: 0
+                }
+                reviews[shelf.name] = currentReviews
                 println("@ books from ${shelf.name} added")
             }
 
-            loadingDone.value = true
+
+            booksLoadingDone.value = true
         }
     }
 

@@ -8,12 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import com.intmainreturn00.arbooks.BooksViewModel
 import com.intmainreturn00.arbooks.R
 import com.intmainreturn00.arbooks.ScopedFragment
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.fragment_loading.*
 import kotlinx.coroutines.launch
+
+
 
 
 class LoadingFragment : ScopedFragment() {
@@ -42,24 +45,26 @@ class LoadingFragment : ScopedFragment() {
             }
         }
 
-        ViewModelProviders.of(this@LoadingFragment).get(BooksViewModel::class.java).currentShelf.observe(
-            this,
-            Observer { currentShelf ->
-                loading.text = String.format(resources.getString(R.string.loading_from), currentShelf)
-            })
+        activity?.run {
+            ViewModelProviders.of(this).get(BooksViewModel::class.java).currentLoadingShelf.observe(
+                this,
+                Observer { currentShelf ->
+                    loading.text = String.format(resources.getString(R.string.loading_from), currentShelf)
+                })
 
-        ViewModelProviders.of(this@LoadingFragment).get(BooksViewModel::class.java).loadingDone.observe(
-            this,
-            Observer { done ->
-                if (done) {
-
-                }
-            })
+            ViewModelProviders.of(this).get(BooksViewModel::class.java).booksLoadingDone.observe(
+                this,
+                Observer { done ->
+                    if (done) {
+                        findNavController().navigate(R.id.action_loading_to_shelves)
+                    }
+                })
+        }
 
     }
 
 
     private fun prefetch() =
-        ViewModelProviders.of(this@LoadingFragment).get(BooksViewModel::class.java).loadProfileData()
+        ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).loadProfileData()
 
 }
