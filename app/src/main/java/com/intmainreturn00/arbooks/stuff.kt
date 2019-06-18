@@ -54,8 +54,18 @@ suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
 
 suspend fun downloadImage(context: Context, url: String) = withContext(Dispatchers.IO) {
     if (url.isNotEmpty()) {
-        GlideApp.with(context).asBitmap().load(url)
-            .diskCacheStrategy(DiskCacheStrategy.ALL).submit().get()
+        try {
+            val res = GlideApp.with(context).asBitmap().load(url)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).submit().get()
+            if (res == null || res.width < 10 ) {
+                null
+            } else {
+                res
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     } else {
         null
     }

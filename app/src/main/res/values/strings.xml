@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">BOOKAR</string>
     <string name="login_button">Login with GoodReads</string>
+    <string name="ar_button">Go to AR!</string>
 
     <plurals name="books">
         <item quantity="zero">book</item>
@@ -18,6 +19,6 @@
     <string name="login_error">GoodReads login failed :(</string>
     <string name="loading">Loading books…</string>
     <string name="loading_from">Loading books from %1$s shelf…</string>
-
+    <string name="processed_n_books">We have processed %1$s from %2$s books</string>
 
 </resources>

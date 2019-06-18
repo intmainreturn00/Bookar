@@ -46,13 +46,15 @@ class LoadingFragment : ScopedFragment() {
         }
 
         activity?.run {
-            ViewModelProviders.of(this).get(BooksViewModel::class.java).currentLoadingShelf.observe(
+            val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
+
+            model.currentLoadingShelf.observe(
                 this,
                 Observer { currentShelf ->
                     loading.text = String.format(resources.getString(R.string.loading_from), currentShelf)
                 })
 
-            ViewModelProviders.of(this).get(BooksViewModel::class.java).booksLoadingDone.observe(
+            model.booksLoadingDone.observe(
                 this,
                 Observer { done ->
                     if (done) {
@@ -65,6 +67,6 @@ class LoadingFragment : ScopedFragment() {
 
 
     private fun prefetch() =
-        ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).loadProfileData()
+        ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).loadBooks()
 
 }
