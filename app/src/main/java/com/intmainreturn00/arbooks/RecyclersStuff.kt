@@ -103,7 +103,7 @@ class ShelvesAdapter(
             holder.header.on.visibility = VISIBLE
         }
 
-        holder.header.setOnClickListener {
+        holder.root.setOnClickListener {
             if (holder.on.tag == "on") {
                 holder.on.tag = "off"
                 holder.on.setImageResource(R.drawable.off)
@@ -134,5 +134,6 @@ class ShelvesAdapter(
         val shelfTitle: TextView = itemView.shelf_title
         val on: ImageView = itemView.on
         val header: LinearLayout = itemView.header
+        val root: LinearLayout = itemView.root
     }
 }

@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.appbar.AppBarLayout
 import com.intmainreturn00.arbooks.*
 
 import kotlinx.android.synthetic.main.fragment_shelves.*
@@ -52,6 +53,7 @@ class ShelvesFragment : Fragment() {
             age.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
 
             status.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Regular.ttf")
+            ar.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Regular.ttf")
 
             shelves.apply {
                 layoutManager = LinearLayoutManager(this@run, RecyclerView.VERTICAL, false)
@@ -59,6 +61,13 @@ class ShelvesFragment : Fragment() {
 
                 }
             }
+
+            appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, offset ->
+                val percentage =
+                    (appBarLayout.totalScrollRange - Math.abs(offset).toFloat() * 1.2f) / appBarLayout.totalScrollRange
+
+                header.alpha = percentage
+            })
 
             model.loadCovers()
 
@@ -83,6 +92,7 @@ class ShelvesFragment : Fragment() {
                     ar.visibility = VISIBLE
                     (shelves.adapter as ShelvesAdapter).allowEditing = true
                     (shelves.adapter as ShelvesAdapter).notifyDataSetChanged()
+                    status.text = resources.getString(R.string.processing_done)
                 }
             })
         }

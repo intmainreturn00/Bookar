@@ -38,7 +38,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             userId = grapi.getUserId()
             user = grapi.getUser(userId.id)
-            shelves = grapi.getAllShelves(userId.id).filterIndexed { index, _ -> (index == 1 || index == 3) }
+            shelves = grapi.getAllShelves(userId.id)
+            //.filterIndexed { index, _ -> (index == 1 || index == 3 || index == 2) }
             //.takeLast(2)
             //
 
