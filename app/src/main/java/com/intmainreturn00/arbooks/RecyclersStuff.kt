@@ -93,7 +93,7 @@ class ShelvesAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val shelf = shelves[position]
         holder.shelfTitle.text = shelf.title
-        holder.shelfTitle.typeface = Typeface.createFromAsset(context.assets, "fonts/Podkova-ExtraBold.ttf")
+        holder.shelfTitle.setCustomFont(PodkovaFont.EXTRA_BOLD)
         val childLayoutManager = LinearLayoutManager(holder.shelf.context, LinearLayout.HORIZONTAL, false)
         childLayoutManager.initialPrefetchItemCount = 4
 

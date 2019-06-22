@@ -1,7 +1,6 @@
 package com.intmainreturn00.arbooks.fragments
 
 
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,15 +8,10 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
-import com.intmainreturn00.arbooks.BooksViewModel
-import com.intmainreturn00.arbooks.R
-import com.intmainreturn00.arbooks.ScopedFragment
+import com.intmainreturn00.arbooks.*
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.fragment_loading.*
 import kotlinx.coroutines.launch
-
-
-
 
 class LoadingFragment : ScopedFragment() {
 
@@ -31,7 +25,7 @@ class LoadingFragment : ScopedFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loading.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Regular.ttf")
+        loading.setCustomFont(PodkovaFont.REGULAR)
 
         launch {
             if (grapi.isLoggedIn()) {

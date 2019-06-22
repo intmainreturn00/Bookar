@@ -37,23 +37,15 @@ class ShelvesFragment : Fragment() {
             GlideApp.with(this).load(model.user.imageUrl).apply(RequestOptions().circleCrop()).into(avatar)
 
             books_num.text = model.numBooks.toString()
-            books_num.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
             books.text = resources.getQuantityString(R.plurals.books, model.numBooks)
-            books.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
-
             pages_num.text = model.numPages.toString()
-            pages_num.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
             pages.text = resources.getQuantityString(R.plurals.pages, model.numPages)
-            pages.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
-
             val (num, qualifier) = formatProfileAge(model.user.joined)
             age_num.text = num
-            age_num.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
             age.text = qualifier
-            age.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
 
-            status.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Regular.ttf")
-            ar.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Regular.ttf")
+            PodkovaFont.EXTRA_BOLD.apply(books_num, books, pages_num, pages, age_num, age)
+            PodkovaFont.REGULAR.apply(status, ar)
 
             shelves.apply {
                 layoutManager = LinearLayoutManager(this@run, RecyclerView.VERTICAL, false)

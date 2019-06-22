@@ -6,6 +6,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ViewRenderable
+import com.intmainreturn00.grapi.Author
+import com.intmainreturn00.grapi.Review
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
@@ -16,9 +18,32 @@ import java.util.*
 import kotlin.random.Random
 
 
+data class BookModel(
+    val title: String,
+    val author: List<Author>,
+    val pages: Int?,
+    var cover: String = "",
+    var coverColor: Int = Color.WHITE
+)
 
+fun constructFromReview(review: Review): BookModel = when {
+    !review.book.imageUrl.contains("nophoto") ->
+        BookModel(
+            review.book.titleWithoutSeries, review.book.authors,
+            review.book.numPages, review.book.imageUrl
+        )
 
-data class BookModel(val pages: Int?, val cover: String)
+    review.book.isbn.isNotEmpty() ->
+        BookModel(
+            review.book.titleWithoutSeries, review.book.authors,
+            review.book.numPages, makeOpenlibLink(review.book.isbn)
+        )
+
+    else -> BookModel(
+        review.book.titleWithoutSeries, review.book.authors,
+        review.book.numPages, ""
+    )
+}
 
 data class ARBook(
     val size: Vector3,
@@ -57,7 +82,7 @@ suspend fun downloadImage(context: Context, url: String) = withContext(Dispatche
         try {
             val res = GlideApp.with(context).asBitmap().load(url)
                 .diskCacheStrategy(DiskCacheStrategy.ALL).submit().get()
-            if (res == null || res.width < 10 ) {
+            if (res == null || res.width < 10) {
                 null
             } else {
                 res

@@ -48,33 +48,15 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 currentLoadingShelf.value = shelf.name
                 val currentReviews = grapi.getAllReviews(userId.id, shelf.name)
 
-                val sortedReviews = currentReviews.sortedWith(
-                    compareBy(
-                        { it.readCount },
-                        { it.rating }
-                    )
-                )
-
                 val bookModels = mutableListOf<BookModel>()
-                numBooks += sortedReviews.size
-                sortedReviews.forEach { review ->
+                numBooks += currentReviews.size
+                currentReviews.forEach { review ->
                     numPages += review.book.numPages ?: 0
-
-                    when {
-                        !review.book.imageUrl.contains("nophoto") ->
-                            bookModels.add(BookModel(review.book.numPages, review.book.imageUrl))
-
-                        review.book.isbn.isNotEmpty() ->
-                            bookModels.add(BookModel(review.book.numPages, makeOpenlibLink(review.book.isbn)))
-
-                        else -> bookModels.add(BookModel(review.book.numPages, ""))
-                    }
-
+                    bookModels.add(constructFromReview(review))
                 }
                 reviews[shelf.name] = bookModels
                 println("@ books from ${shelf.name} added")
             }
-
 
             booksLoadingDone.value = true
         }
@@ -89,9 +71,14 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 books.forEach { book ->
                     // for each book on shelf..
                     numLoaded.value = numLoaded.value!! + 1
-                    downloadImage(getApplication(), book.cover)?.let {
-                        println(ColorArt(it).backgroundColor)
-                        lastLoadedCover.value = book.cover
+
+                    downloadImage(getApplication(), book.cover).let {
+                        if (it != null) {
+                            book.coverColor = ColorArt(it).backgroundColor
+                            lastLoadedCover.value = book.cover
+                        } else {
+                            book.cover = ""
+                        }
                     }
                 }
             }

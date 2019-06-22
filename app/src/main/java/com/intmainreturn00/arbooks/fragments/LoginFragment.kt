@@ -1,13 +1,14 @@
 package com.intmainreturn00.arbooks.fragments
 
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.intmainreturn00.arbooks.PodkovaFont
 
 import com.intmainreturn00.arbooks.R
 import com.intmainreturn00.arbooks.ScopedFragment
+import com.intmainreturn00.arbooks.setCustomFont
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.coroutines.launch
@@ -26,9 +27,9 @@ class LoginFragment : ScopedFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        login.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Medium.ttf")
-        intro.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-Regular.ttf")
-        bookar.typeface = Typeface.createFromAsset(context?.assets, "fonts/Podkova-ExtraBold.ttf")
+        login.setCustomFont(PodkovaFont.MEDIUM)
+        intro.setCustomFont(PodkovaFont.REGULAR)
+        bookar.setCustomFont(PodkovaFont.EXTRA_BOLD)
 
         login.setOnClickListener {
             launch {
