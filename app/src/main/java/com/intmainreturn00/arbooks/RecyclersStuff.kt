@@ -14,9 +14,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.book.view.img
-import kotlinx.android.synthetic.main.book_template1.view.*
-import kotlinx.android.synthetic.main.book_template2.view.*
-import kotlinx.android.synthetic.main.book_template3.view.*
 import kotlinx.android.synthetic.main.shelf.view.*
 
 
@@ -31,13 +28,13 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = when (viewType) {
         TYPE_COVER -> CoverViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false))
-        TYPE_TEMPLATE1 -> Template1ViewHolder(
+        TYPE_TEMPLATE1 -> TemplateViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.book_template1, parent, false)
         )
-        TYPE_TEMPLATE2 -> Template2ViewHolder(
+        TYPE_TEMPLATE2 -> TemplateViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.book_template2, parent, false)
         )
-        else -> Template3ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book_template3, parent, false))
+        else -> TemplateViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book_template3, parent, false))
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -52,84 +49,30 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
                     setUnlocked(holder.img)
                 }
             }
-            TYPE_TEMPLATE1 -> {
-                val template1Holder = holder as Template1ViewHolder
-                template1Holder.title.text = book.title
-                template1Holder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
-                template1Holder.author1.setCustomFont(PodkovaFont.REGULAR)
-                template1Holder.author2.setCustomFont(PodkovaFont.REGULAR)
-                when (book.authors.size) {
-                    0 -> {
-                        template1Holder.author1.text = ""
-                        template1Holder.author2.text = ""
-                        template1Holder.author1.visibility = GONE
-                        template1Holder.author2.visibility = GONE
-                    }
-                    1 -> {
-                        template1Holder.author1.text = book.authors[0]
-                        template1Holder.author2.text = ""
-                        template1Holder.author1.visibility = VISIBLE
-                        template1Holder.author2.visibility = GONE
-                    }
-                    else -> {
-                        template1Holder.author1.text = book.authors[0]
-                        template1Holder.author2.text = book.authors[1]
-                        template1Holder.author1.visibility = VISIBLE
-                        template1Holder.author2.visibility = VISIBLE
-                    }
-                }
-            }
-            TYPE_TEMPLATE2 -> {
-                val template2Holder = holder as Template2ViewHolder
-                template2Holder.title.text = books[position].title
-                template2Holder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
-                template2Holder.author1.setCustomFont(PodkovaFont.REGULAR)
-                template2Holder.author2.setCustomFont(PodkovaFont.REGULAR)
-                when (book.authors.size) {
-                    0 -> {
-                        template2Holder.author1.text = ""
-                        template2Holder.author2.text = ""
-                        template2Holder.author1.visibility = GONE
-                        template2Holder.author2.visibility = GONE
-                    }
-                    1 -> {
-                        template2Holder.author1.text = book.authors[0]
-                        template2Holder.author2.text = ""
-                        template2Holder.author1.visibility = VISIBLE
-                        template2Holder.author2.visibility = GONE
-                    }
-                    else -> {
-                        template2Holder.author1.text = book.authors[0]
-                        template2Holder.author2.text = book.authors[1]
-                        template2Holder.author1.visibility = VISIBLE
-                        template2Holder.author2.visibility = VISIBLE
-                    }
-                }
-            }
             else -> {
-                val template3Holder = holder as Template3ViewHolder
-                template3Holder.title.text = books[position].title
-                template3Holder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
-                template3Holder.author1.setCustomFont(PodkovaFont.REGULAR)
-                template3Holder.author2.setCustomFont(PodkovaFont.REGULAR)
+                val templateHolder = holder as TemplateViewHolder
+                templateHolder.title.text = book.title
+                templateHolder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
+                templateHolder.author1.setCustomFont(PodkovaFont.REGULAR)
+                templateHolder.author2.setCustomFont(PodkovaFont.REGULAR)
                 when (book.authors.size) {
                     0 -> {
-                        template3Holder.author1.text = ""
-                        template3Holder.author2.text = ""
-                        template3Holder.author1.visibility = GONE
-                        template3Holder.author2.visibility = GONE
+                        templateHolder.author1.text = ""
+                        templateHolder.author2.text = ""
+                        templateHolder.author1.visibility = GONE
+                        templateHolder.author2.visibility = GONE
                     }
                     1 -> {
-                        template3Holder.author1.text = book.authors[0]
-                        template3Holder.author2.text = ""
-                        template3Holder.author1.visibility = VISIBLE
-                        template3Holder.author2.visibility = GONE
+                        templateHolder.author1.text = book.authors[0]
+                        templateHolder.author2.text = ""
+                        templateHolder.author1.visibility = VISIBLE
+                        templateHolder.author2.visibility = GONE
                     }
                     else -> {
-                        template3Holder.author1.text = book.authors[0]
-                        template3Holder.author2.text = book.authors[1]
-                        template3Holder.author1.visibility = VISIBLE
-                        template3Holder.author2.visibility = VISIBLE
+                        templateHolder.author1.text = book.authors[0]
+                        templateHolder.author2.text = book.authors[1]
+                        templateHolder.author1.visibility = VISIBLE
+                        templateHolder.author2.visibility = VISIBLE
                     }
                 }
             }
@@ -155,25 +98,9 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
     }
 
     inner class TemplateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //val title: TextView = itemView.findViewById(R.id)
-    }
-
-    inner class Template1ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.t1_title
-        val author1: TextView = itemView.t1_author1
-        val author2: TextView = itemView.t1_author2
-    }
-
-    inner class Template2ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.t2_title
-        val author1: TextView = itemView.t2_author1
-        val author2: TextView = itemView.t2_author2
-    }
-
-    inner class Template3ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.t3_title
-        val author1: TextView = itemView.t3_author1
-        val author2: TextView = itemView.t3_author2
+        val title: TextView = itemView.findViewById(R.id.title)
+        val author1: TextView = itemView.findViewById(R.id.author1)
+        val author2: TextView = itemView.findViewById(R.id.author2)
     }
 
     companion object {
