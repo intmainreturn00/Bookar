@@ -63,7 +63,7 @@ class ShelvesFragment : Fragment() {
 
             model.loadCovers()
 
-            model.lastLoadedCover.observe(this, Observer {
+            model.lastProcessedBook.observe(this, Observer {
                 val index = model.shelfIndex
                 if (index >= shelvesModels.size) {
                     shelvesModels.add(ShelfModel(model.shelfTitle, mutableListOf()))
@@ -74,11 +74,11 @@ class ShelvesFragment : Fragment() {
                 (shelves.adapter as ShelvesAdapter).notifyBookAdded(index)
             })
 
-            model.numLoaded.observe(this, Observer {
+            model.numProcessed.observe(this, Observer {
                 status.text = String.format(resources.getString(R.string.processed_n_books), it, model.numBooks)
             })
 
-            model.coversLoadingDone.observe(this, Observer { done ->
+            model.processingDone.observe(this, Observer { done ->
                 if (done) {
                     progress.visibility = INVISIBLE
                     ar.visibility = VISIBLE

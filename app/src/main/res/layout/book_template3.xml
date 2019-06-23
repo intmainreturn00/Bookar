@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/img"
+    android:layout_width="85dp"
+    android:layout_height="130dp"
+    android:layout_marginEnd="35dp"
+    android:background="@drawable/shadow">
+
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/dark" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/t3_title"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:hyphenationFrequency="normal"
+            android:maxWidth="65dp"
+            android:maxLines="3"
+            android:text="Кысь"
+            android:textColor="@color/orange"
+            app:autoSizeMaxTextSize="14sp"
+            app:autoSizeMinTextSize="6sp"
+            app:autoSizeTextType="uniform" />
+
+        <TextView
+            android:id="@+id/t3_author1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="4dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:maxWidth="65dp"
+            android:maxLines="1"
+            android:text="Rothfuss, Patrick"
+            android:textColor="@color/orange"
+            app:autoSizeMaxTextSize="10sp"
+            app:autoSizeMinTextSize="6sp"
+            app:autoSizeTextType="uniform" />
+
+        <TextView
+            android:id="@+id/t3_author2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="-4dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="4dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:maxWidth="65dp"
+            android:maxLines="1"
+            android:text="Rothfuss, Patrick2"
+            android:textColor="@color/orange"
+            app:autoSizeMaxTextSize="10sp"
+            app:autoSizeMinTextSize="6sp"
+            app:autoSizeTextType="uniform" />
+
+    </LinearLayout>
+
+</FrameLayout>

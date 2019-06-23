@@ -20,7 +20,7 @@ import kotlin.random.Random
 
 data class BookModel(
     val title: String,
-    val author: List<Author>,
+    val authors: List<String>,
     val pages: Int?,
     var cover: String = "",
     var coverColor: Int = Color.WHITE
@@ -29,21 +29,27 @@ data class BookModel(
 fun constructFromReview(review: Review): BookModel = when {
     !review.book.imageUrl.contains("nophoto") ->
         BookModel(
-            review.book.titleWithoutSeries, review.book.authors,
+            review.book.titleWithoutSeries,
+            constructAuthorsTitle(review.book.authors),
             review.book.numPages, review.book.imageUrl
         )
 
     review.book.isbn.isNotEmpty() ->
         BookModel(
-            review.book.titleWithoutSeries, review.book.authors,
+            review.book.titleWithoutSeries,
+            constructAuthorsTitle(review.book.authors),
             review.book.numPages, makeOpenlibLink(review.book.isbn)
         )
 
     else -> BookModel(
-        review.book.titleWithoutSeries, review.book.authors,
+        review.book.titleWithoutSeries,
+        constructAuthorsTitle(review.book.authors),
         review.book.numPages, ""
     )
 }
+
+fun constructAuthorsTitle(authors: List<Author>): List<String> = authors.take(2).map { it.name }
+
 
 data class ARBook(
     val size: Vector3,

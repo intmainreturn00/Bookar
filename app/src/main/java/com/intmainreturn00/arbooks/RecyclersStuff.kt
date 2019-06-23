@@ -1,50 +1,186 @@
 package com.intmainreturn00.arbooks
 
 import android.content.Context
-import android.graphics.Typeface
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.book.view.*
+import kotlinx.android.synthetic.main.book.view.img
+import kotlinx.android.synthetic.main.book_template1.view.*
+import kotlinx.android.synthetic.main.book_template2.view.*
+import kotlinx.android.synthetic.main.book_template3.view.*
 import kotlinx.android.synthetic.main.shelf.view.*
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.ColorMatrix
-import android.view.View.VISIBLE
 
 
 data class ShelfModel(
     val title: String = "",
-    val images: MutableList<String>
+    val images: MutableList<BookModel>
 )
 
-class ShelfAdapter(val context: Context, private val images: MutableList<String>) :
-    RecyclerView.Adapter<ShelfAdapter.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false)
-        return ViewHolder(v)
+class ShelfAdapter(val context: Context, private val books: MutableList<BookModel>) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = when (viewType) {
+        TYPE_COVER -> CoverViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false))
+        TYPE_TEMPLATE1 -> Template1ViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.book_template1, parent, false)
+        )
+        TYPE_TEMPLATE2 -> Template2ViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.book_template2, parent, false)
+        )
+        else -> Template3ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book_template3, parent, false))
     }
 
-    override fun getItemCount(): Int = images.size
-
-    var gray = false
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        GlideApp.with(context).load(images[position]).into(holder.img)
-        if (gray) {
-            setLocked(holder.img)
-        } else {
-            setUnlocked(holder.img)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val book = books[position]
+        when (getItemViewType(position)) {
+            TYPE_COVER -> {
+                val coverHolder = holder as CoverViewHolder
+                GlideApp.with(context).load(book.cover).into(coverHolder.img)
+                if (gray) {
+                    setLocked(holder.img)
+                } else {
+                    setUnlocked(holder.img)
+                }
+            }
+            TYPE_TEMPLATE1 -> {
+                val template1Holder = holder as Template1ViewHolder
+                template1Holder.title.text = book.title
+                template1Holder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
+                template1Holder.author1.setCustomFont(PodkovaFont.REGULAR)
+                template1Holder.author2.setCustomFont(PodkovaFont.REGULAR)
+                when (book.authors.size) {
+                    0 -> {
+                        template1Holder.author1.text = ""
+                        template1Holder.author2.text = ""
+                        template1Holder.author1.visibility = GONE
+                        template1Holder.author2.visibility = GONE
+                    }
+                    1 -> {
+                        template1Holder.author1.text = book.authors[0]
+                        template1Holder.author2.text = ""
+                        template1Holder.author1.visibility = VISIBLE
+                        template1Holder.author2.visibility = GONE
+                    }
+                    else -> {
+                        template1Holder.author1.text = book.authors[0]
+                        template1Holder.author2.text = book.authors[1]
+                        template1Holder.author1.visibility = VISIBLE
+                        template1Holder.author2.visibility = VISIBLE
+                    }
+                }
+            }
+            TYPE_TEMPLATE2 -> {
+                val template2Holder = holder as Template2ViewHolder
+                template2Holder.title.text = books[position].title
+                template2Holder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
+                template2Holder.author1.setCustomFont(PodkovaFont.REGULAR)
+                template2Holder.author2.setCustomFont(PodkovaFont.REGULAR)
+                when (book.authors.size) {
+                    0 -> {
+                        template2Holder.author1.text = ""
+                        template2Holder.author2.text = ""
+                        template2Holder.author1.visibility = GONE
+                        template2Holder.author2.visibility = GONE
+                    }
+                    1 -> {
+                        template2Holder.author1.text = book.authors[0]
+                        template2Holder.author2.text = ""
+                        template2Holder.author1.visibility = VISIBLE
+                        template2Holder.author2.visibility = GONE
+                    }
+                    else -> {
+                        template2Holder.author1.text = book.authors[0]
+                        template2Holder.author2.text = book.authors[1]
+                        template2Holder.author1.visibility = VISIBLE
+                        template2Holder.author2.visibility = VISIBLE
+                    }
+                }
+            }
+            else -> {
+                val template3Holder = holder as Template3ViewHolder
+                template3Holder.title.text = books[position].title
+                template3Holder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
+                template3Holder.author1.setCustomFont(PodkovaFont.REGULAR)
+                template3Holder.author2.setCustomFont(PodkovaFont.REGULAR)
+                when (book.authors.size) {
+                    0 -> {
+                        template3Holder.author1.text = ""
+                        template3Holder.author2.text = ""
+                        template3Holder.author1.visibility = GONE
+                        template3Holder.author2.visibility = GONE
+                    }
+                    1 -> {
+                        template3Holder.author1.text = book.authors[0]
+                        template3Holder.author2.text = ""
+                        template3Holder.author1.visibility = VISIBLE
+                        template3Holder.author2.visibility = GONE
+                    }
+                    else -> {
+                        template3Holder.author1.text = book.authors[0]
+                        template3Holder.author2.text = book.authors[1]
+                        template3Holder.author1.visibility = VISIBLE
+                        template3Holder.author2.visibility = VISIBLE
+                    }
+                }
+            }
         }
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    override fun getItemCount(): Int = books.size
+
+    override fun getItemViewType(position: Int): Int {
+        val book = books[position]
+        return when {
+            book.cover.isNotEmpty() -> TYPE_COVER
+            position % 3 == 0 -> TYPE_TEMPLATE1
+            position % 3 == 1 -> TYPE_TEMPLATE2
+            else -> TYPE_TEMPLATE3
+        }
+    }
+
+    var gray = false
+
+    inner class CoverViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val img: ImageView = itemView.img
+    }
+
+    inner class TemplateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        //val title: TextView = itemView.findViewById(R.id)
+    }
+
+    inner class Template1ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val title: TextView = itemView.t1_title
+        val author1: TextView = itemView.t1_author1
+        val author2: TextView = itemView.t1_author2
+    }
+
+    inner class Template2ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val title: TextView = itemView.t2_title
+        val author1: TextView = itemView.t2_author1
+        val author2: TextView = itemView.t2_author2
+    }
+
+    inner class Template3ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val title: TextView = itemView.t3_title
+        val author1: TextView = itemView.t3_author1
+        val author2: TextView = itemView.t3_author2
+    }
+
+    companion object {
+        private const val TYPE_COVER = 0
+        private const val TYPE_TEMPLATE1 = 1
+        private const val TYPE_TEMPLATE2 = 2
+        private const val TYPE_TEMPLATE3 = 3
     }
 
     private fun setLocked(v: ImageView) {
@@ -60,6 +196,7 @@ class ShelfAdapter(val context: Context, private val images: MutableList<String>
         v.imageAlpha = 255
     }
 }
+
 
 class ShelvesAdapter(
     val context: Context,

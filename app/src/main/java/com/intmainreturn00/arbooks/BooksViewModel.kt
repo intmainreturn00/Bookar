@@ -15,7 +15,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var userId: UserId
     lateinit var user: User
     lateinit var shelves: List<Shelf>
-    val reviews = HashMap<String, List<BookModel>>()
+    val reviews = HashMap<String, List<BookModel>>() // shelf -> books
 
     val currentLoadingShelf = MutableLiveData<String>()
     val booksLoadingDone = MutableLiveData<Boolean>()
@@ -23,25 +23,25 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     var numBooks = 0
     var numPages = 0
 
-    val lastLoadedCover = MutableLiveData<String>()
+    val lastProcessedBook = MutableLiveData<BookModel>()
     var shelfIndex = -1
     var shelfTitle = ""
-    var numLoaded = MutableLiveData<Int>()
+    var numProcessed = MutableLiveData<Int>()
 
-    val coversLoadingDone = MutableLiveData<Boolean>()
+    val processingDone = MutableLiveData<Boolean>()
 
     init {
-        numLoaded.value = 0
+        numProcessed.value = 0
     }
+
 
     fun loadBooks() {
         viewModelScope.launch {
             userId = grapi.getUserId()
             user = grapi.getUser(userId.id)
-            shelves = grapi.getAllShelves(userId.id)
+            shelves = grapi.getAllShelves(userId.id)//.takeLast(1)
             //.filterIndexed { index, _ -> (index == 1 || index == 3 || index == 2) }
             //.takeLast(2)
-            //
 
 
             for (shelf in shelves) {
@@ -55,12 +55,12 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                     bookModels.add(constructFromReview(review))
                 }
                 reviews[shelf.name] = bookModels
-                println("@ books from ${shelf.name} added")
             }
 
             booksLoadingDone.value = true
         }
     }
+
 
     fun loadCovers() {
         viewModelScope.launch {
@@ -70,19 +70,20 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 shelfIndex++
                 books.forEach { book ->
                     // for each book on shelf..
-                    numLoaded.value = numLoaded.value!! + 1
+                    numProcessed.value = numProcessed.value!! + 1
 
                     downloadImage(getApplication(), book.cover).let {
                         if (it != null) {
                             book.coverColor = ColorArt(it).backgroundColor
-                            lastLoadedCover.value = book.cover
                         } else {
                             book.cover = ""
                         }
                     }
+
+                    lastProcessedBook.value = book
                 }
             }
-            coversLoadingDone.value = true
+            processingDone.value = true
         }
     }
 
