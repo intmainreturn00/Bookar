@@ -23,18 +23,36 @@ data class ShelfModel(
 )
 
 
+fun ImageView.gray(on: Boolean) {
+    if (on) {
+        val matrix = ColorMatrix()
+        matrix.setSaturation(0f)  //0 means grayscale
+        val cf = ColorMatrixColorFilter(matrix)
+        colorFilter = cf
+        imageAlpha = 153   // 128 = 0.5, 153 = 0.6
+    } else {
+        colorFilter = null
+        imageAlpha = 255
+    }
+}
+
+
 class ShelfAdapter(val context: Context, private val books: MutableList<BookModel>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    var gray = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = when (viewType) {
         TYPE_COVER -> CoverViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false))
         TYPE_TEMPLATE1 -> TemplateViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.book_template1, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.book_template1, parent, false), TYPE_TEMPLATE1
         )
         TYPE_TEMPLATE2 -> TemplateViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.book_template2, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.book_template2, parent, false), TYPE_TEMPLATE2
         )
-        else -> TemplateViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book_template3, parent, false))
+        else -> TemplateViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.book_template3, parent, false), TYPE_TEMPLATE3
+        )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -43,11 +61,7 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
             TYPE_COVER -> {
                 val coverHolder = holder as CoverViewHolder
                 GlideApp.with(context).load(book.cover).into(coverHolder.img)
-                if (gray) {
-                    setLocked(holder.img)
-                } else {
-                    setUnlocked(holder.img)
-                }
+                holder.img.gray(gray)
             }
             else -> {
                 val templateHolder = holder as TemplateViewHolder
@@ -55,6 +69,7 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
                 templateHolder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
                 templateHolder.author1.setCustomFont(PodkovaFont.REGULAR)
                 templateHolder.author2.setCustomFont(PodkovaFont.REGULAR)
+                templateHolder.gray(gray)
                 when (book.authors.size) {
                     0 -> {
                         templateHolder.author1.text = ""
@@ -91,16 +106,46 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
         }
     }
 
-    var gray = false
-
     inner class CoverViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val img: ImageView = itemView.img
     }
 
-    inner class TemplateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class TemplateViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
+        val type = viewType
         val title: TextView = itemView.findViewById(R.id.title)
         val author1: TextView = itemView.findViewById(R.id.author1)
         val author2: TextView = itemView.findViewById(R.id.author2)
+        val background: View = itemView.findViewById(R.id.background)
+
+        fun gray(on: Boolean) {
+            if (on) {
+                background.setBackgroundColor(context.resources.getColor(R.color.grey_background))
+                title.setTextColor(context.resources.getColor(R.color.grey_font))
+                author1.setTextColor(context.resources.getColor(R.color.grey_font))
+                author2.setTextColor(context.resources.getColor(R.color.grey_font))
+            } else {
+                when (type) {
+                    TYPE_TEMPLATE1 -> {
+                        background.setBackgroundColor(context.resources.getColor(R.color.red))
+                        title.setTextColor(context.resources.getColor(R.color.orange))
+                        author1.setTextColor(context.resources.getColor(R.color.orange))
+                        author2.setTextColor(context.resources.getColor(R.color.orange))
+                    }
+                    TYPE_TEMPLATE2 -> {
+                        background.setBackgroundColor(context.resources.getColor(R.color.orange))
+                        title.setTextColor(context.resources.getColor(R.color.dark))
+                        author1.setTextColor(context.resources.getColor(R.color.dark))
+                        author2.setTextColor(context.resources.getColor(R.color.dark))
+                    }
+                    else -> {
+                        background.setBackgroundColor(context.resources.getColor(R.color.dark))
+                        title.setTextColor(context.resources.getColor(R.color.orange))
+                        author1.setTextColor(context.resources.getColor(R.color.orange))
+                        author2.setTextColor(context.resources.getColor(R.color.orange))
+                    }
+                }
+            }
+        }
     }
 
     companion object {
@@ -108,19 +153,6 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
         private const val TYPE_TEMPLATE1 = 1
         private const val TYPE_TEMPLATE2 = 2
         private const val TYPE_TEMPLATE3 = 3
-    }
-
-    private fun setLocked(v: ImageView) {
-        val matrix = ColorMatrix()
-        matrix.setSaturation(0f)  //0 means grayscale
-        val cf = ColorMatrixColorFilter(matrix)
-        v.colorFilter = cf
-        v.imageAlpha = 128   // 128 = 0.5
-    }
-
-    private fun setUnlocked(v: ImageView) {
-        v.colorFilter = null
-        v.imageAlpha = 255
     }
 }
 

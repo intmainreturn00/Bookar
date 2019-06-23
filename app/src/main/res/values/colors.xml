@@ -18,6 +18,10 @@
     <color name="black_text">#2f2937</color>
 
     <color name="white_background">#f3f3f3</color>
+
     <color name="shadow">#29352c3a</color>
+    <color name="grey_background">#C4C4C4</color>
+    <color name="grey_font">#EBEBEB</color>
+
 
 </resources>
