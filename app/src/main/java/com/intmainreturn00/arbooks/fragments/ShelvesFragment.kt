@@ -6,8 +6,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
+import android.view.View.*
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -84,7 +83,9 @@ class ShelvesFragment : Fragment() {
                     ar.visibility = VISIBLE
                     (shelves.adapter as ShelvesAdapter).allowEditing = true
                     (shelves.adapter as ShelvesAdapter).notifyDataSetChanged()
-                    status.text = resources.getString(R.string.processing_done)
+                    status.text = resources.getString(R.string.processing_complete)
+                    //toolbar.visibility = GONE
+                    bottom.visibility = VISIBLE
                 }
             })
         }

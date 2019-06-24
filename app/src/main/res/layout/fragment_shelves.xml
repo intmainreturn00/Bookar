@@ -154,6 +154,7 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
         <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_collapseMode="pin">
@@ -178,8 +179,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white_background"
+        android:clipToPadding="false"
         android:overScrollMode="never"
+        android:paddingBottom="100dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <View
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="195dp"
+        android:layout_gravity="bottom"
+        android:visibility="invisible"
+        android:background="@drawable/recycler_bottom" />
 
     <android.widget.Button
         android:id="@+id/ar"

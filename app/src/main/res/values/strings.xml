@@ -20,6 +20,6 @@
     <string name="loading">Loading books…</string>
     <string name="loading_from">Loading books from %1$s shelf…</string>
     <string name="processed_n_books">We have processed %1$s of %2$s books</string>
-    <string name="processing_done">Processing done!</string>
+    <string name="processing_complete">Processing complete!</string>
 
 </resources>
