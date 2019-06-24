@@ -55,8 +55,10 @@ class ShelvesFragment : Fragment() {
                     }
                     if (model.selectedShelves.size > 0) {
                         ar.visibility = VISIBLE
+                        this@run.bottom.visibility = VISIBLE
                     } else {
                         ar.visibility = INVISIBLE
+                        this@run.bottom.visibility = INVISIBLE
                     }
                 }
             }
@@ -64,7 +66,6 @@ class ShelvesFragment : Fragment() {
             appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, offset ->
                 val percentage =
                     (appBarLayout.totalScrollRange - Math.abs(offset).toFloat() * 1.2f) / appBarLayout.totalScrollRange
-
                 header.alpha = percentage
             })
 
@@ -89,6 +90,7 @@ class ShelvesFragment : Fragment() {
                     progress.visibility = INVISIBLE
                     if (model.selectedShelves.size > 0) {
                         ar.visibility = VISIBLE
+                        bottom.visibility = VISIBLE
                     } else {
                         no_books.visibility = VISIBLE
                         toolbar.visibility = INVISIBLE
@@ -99,7 +101,6 @@ class ShelvesFragment : Fragment() {
                         (shelves.adapter as ShelvesAdapter).itemCount
                     )
                     status.text = resources.getString(R.string.processing_complete)
-                    bottom.visibility = VISIBLE
                 }
             })
         }
