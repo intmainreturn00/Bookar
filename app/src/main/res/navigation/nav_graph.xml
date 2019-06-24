@@ -48,6 +48,16 @@
         android:id="@+id/shelvesFragment"
         android:name="com.intmainreturn00.arbooks.fragments.ShelvesFragment"
         android:label="fragment_shelves"
-        tools:layout="@layout/fragment_shelves" />
+        tools:layout="@layout/fragment_shelves" >
+        <action
+            android:id="@+id/action_shelves_to_ar"
+            app:destination="@id/ARFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/ARFragment"
+        android:name="com.intmainreturn00.arbooks.fragments.ARFragment"
+        android:label="fragment_ar"
+        tools:layout="@layout/fragment_ar" />
 
 </navigation>

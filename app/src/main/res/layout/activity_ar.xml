@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/sceneform_fragment"
-        android:name="com.intmainreturn00.arbooks.WritingArFragment"
+        android:name="com.intmainreturn00.arbooks.fragments.WritingArFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks;
+package com.intmainreturn00.arbooks.fragments;
 
 import android.Manifest;
 import com.google.ar.sceneform.ux.ArFragment;
@@ -15,4 +15,5 @@ public class WritingArFragment extends ArFragment {
         }
         return permissions;
     }
+
 }

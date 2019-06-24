@@ -9,6 +9,7 @@ import android.view.View.*
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
@@ -69,7 +70,9 @@ class ShelvesFragment : Fragment() {
                 header.alpha = percentage
             })
 
-            model.loadCovers()
+            if (model.processingDone.value == false) {
+                model.loadCovers()
+            }
 
             model.lastProcessedBook.observe(this, Observer {
                 val index = model.shelfIndex
@@ -103,6 +106,10 @@ class ShelvesFragment : Fragment() {
                     status.text = resources.getString(R.string.processing_complete)
                 }
             })
+
+            ar.setOnClickListener {
+                findNavController().navigate(R.id.action_shelves_to_ar)
+            }
         }
 
     }
