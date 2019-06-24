@@ -184,6 +184,22 @@
         android:paddingBottom="100dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <TextView
+        android:id="@+id/no_books"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="22dp"
+        android:layout_marginEnd="22dp"
+        android:layout_marginBottom="65dp"
+        android:gravity="center_horizontal"
+        android:lineSpacingExtra="8sp"
+        android:layout_marginTop="50dp"
+        android:text="@string/no_books"
+        android:visibility="invisible"
+        android:layout_gravity="center"
+        android:textColor="#2f2937"
+        android:textSize="18sp" />
+
     <View
         android:id="@+id/bottom"
         android:layout_width="match_parent"

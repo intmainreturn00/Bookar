@@ -42,13 +42,22 @@ class ShelvesFragment : Fragment() {
             age_num.text = num
             age.text = qualifier
 
-            PodkovaFont.EXTRA_BOLD.apply(books_num, books, pages_num, pages, age_num, age)
+            PodkovaFont.EXTRA_BOLD.apply(books_num, books, pages_num, pages, age_num, age, no_books)
             PodkovaFont.REGULAR.apply(status, ar)
 
             shelves.apply {
                 layoutManager = LinearLayoutManager(this@run, RecyclerView.VERTICAL, false)
                 adapter = ShelvesAdapter(this@run, shelvesModels) { on: Boolean, position: Int ->
-
+                    if (on) {
+                        model.selectedShelves.add(position)
+                    } else {
+                        model.selectedShelves.remove(position)
+                    }
+                    if (model.selectedShelves.size > 0) {
+                        ar.visibility = VISIBLE
+                    } else {
+                        ar.visibility = INVISIBLE
+                    }
                 }
             }
 
@@ -78,7 +87,12 @@ class ShelvesFragment : Fragment() {
             model.processingDone.observe(this, Observer { done ->
                 if (done) {
                     progress.visibility = INVISIBLE
-                    ar.visibility = VISIBLE
+                    if (model.selectedShelves.size > 0) {
+                        ar.visibility = VISIBLE
+                    } else {
+                        no_books.visibility = VISIBLE
+                        toolbar.visibility = INVISIBLE
+                    }
                     (shelves.adapter as ShelvesAdapter).lock = false
                     (shelves.adapter as ShelvesAdapter).notifyItemRangeChanged(
                         0,

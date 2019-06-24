@@ -16,7 +16,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var user: User
     lateinit var shelves: List<Shelf>
     val reviews = HashMap<String, List<BookModel>>() // shelf -> books
-    val uniqueBookIds = HashSet<Int>()
+    private val uniqueBookIds = HashSet<Int>()
 
     val currentLoadingShelf = MutableLiveData<String>()
     val booksLoadingDone = MutableLiveData<Boolean>()
@@ -30,6 +30,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     var numProcessed = MutableLiveData<Int>()
 
     val processingDone = MutableLiveData<Boolean>()
+    val selectedShelves = HashSet<Int>()
 
     init {
         numProcessed.value = 0
@@ -91,6 +92,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                     lastProcessedBook.value = book
                 }
             }
+            selectedShelves.addAll(shelves.mapIndexed { index, _ -> index })
             processingDone.value = true
         }
     }

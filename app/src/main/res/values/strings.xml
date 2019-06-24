@@ -21,5 +21,6 @@
     <string name="loading_from">Loading books from %1$s shelf…</string>
     <string name="processed_n_books">We have processed %1$s of %2$s books</string>
     <string name="processing_complete">Processing complete!</string>
+    <string name="no_books">It seems you have no books\nat GoodRead account :(\nPick up some and return here!</string>
 
 </resources>
