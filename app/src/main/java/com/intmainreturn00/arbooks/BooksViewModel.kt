@@ -16,6 +16,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var user: User
     lateinit var shelves: List<Shelf>
     val reviews = HashMap<String, List<BookModel>>() // shelf -> books
+    val uniqueBookIds = HashSet<Int>()
 
     val currentLoadingShelf = MutableLiveData<String>()
     val booksLoadingDone = MutableLiveData<Boolean>()
@@ -49,9 +50,12 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 val currentReviews = grapi.getAllReviews(userId.id, shelf.name)
 
                 val bookModels = mutableListOf<BookModel>()
-                numBooks += currentReviews.size
                 currentReviews.forEach { review ->
-                    numPages += review.book.numPages ?: 0
+                    if (!uniqueBookIds.contains(review.book.id.toInt())) {
+                        uniqueBookIds.add(review.book.id.toInt())
+                        numBooks += 1
+                        numPages += review.book.numPages ?: 0
+                    }
                     bookModels.add(constructFromReview(review))
                 }
                 reviews[shelf.name] = bookModels.asReversed()
@@ -64,13 +68,17 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadCovers() {
         viewModelScope.launch {
+            uniqueBookIds.clear()
             reviews.forEach { (title, books) ->
                 // for each shelf..
                 this@BooksViewModel.shelfTitle = title
                 shelfIndex++
                 books.forEach { book ->
                     // for each book on shelf..
-                    numProcessed.value = numProcessed.value!! + 1
+                    if (!uniqueBookIds.contains(book.id)) {
+                        uniqueBookIds.add(book.id)
+                        numProcessed.value = numProcessed.value!! + 1
+                    }
 
                     downloadImage(getApplication(), book.cover).let {
                         if (it != null) {
