@@ -19,6 +19,7 @@ import kotlin.random.Random
 
 
 data class BookModel(
+    val id: Int,
     val title: String,
     val authors: List<String>,
     val pages: Int?,
@@ -29,20 +30,20 @@ data class BookModel(
 fun constructFromReview(review: Review): BookModel = when {
     !review.book.imageUrl.contains("nophoto") ->
         BookModel(
-            review.book.titleWithoutSeries,
+            review.book.id.toInt(), review.book.titleWithoutSeries,
             constructAuthorsTitle(review.book.authors),
             review.book.numPages, review.book.imageUrl
         )
 
     review.book.isbn.isNotEmpty() ->
         BookModel(
-            review.book.titleWithoutSeries,
+            review.book.id.toInt(), review.book.titleWithoutSeries,
             constructAuthorsTitle(review.book.authors),
             review.book.numPages, makeOpenlibLink(review.book.isbn)
         )
 
     else -> BookModel(
-        review.book.titleWithoutSeries,
+        review.book.id.toInt(), review.book.titleWithoutSeries,
         constructAuthorsTitle(review.book.authors),
         review.book.numPages, ""
     )

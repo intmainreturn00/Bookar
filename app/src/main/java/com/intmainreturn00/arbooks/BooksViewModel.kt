@@ -39,7 +39,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             userId = grapi.getUserId()
             user = grapi.getUser(userId.id)
-            shelves = grapi.getAllShelves(userId.id)//.takeLast(1)
+            shelves = grapi.getAllShelves(userId.id)//.takeLast(2)
             //.filterIndexed { index, _ -> (index == 1 || index == 3 || index == 2) }
             //.takeLast(2)
 
@@ -54,7 +54,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                     numPages += review.book.numPages ?: 0
                     bookModels.add(constructFromReview(review))
                 }
-                reviews[shelf.name] = bookModels
+                reviews[shelf.name] = bookModels.asReversed()
             }
 
             booksLoadingDone.value = true

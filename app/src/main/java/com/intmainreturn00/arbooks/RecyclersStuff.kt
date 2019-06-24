@@ -18,8 +18,9 @@ import kotlinx.android.synthetic.main.shelf.view.*
 
 
 data class ShelfModel(
+    val id: Int,
     val title: String = "",
-    val images: MutableList<BookModel>
+    val books: MutableList<BookModel>
 )
 
 
@@ -96,6 +97,10 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
 
     override fun getItemCount(): Int = books.size
 
+    override fun getItemId(position: Int): Long {
+        return books[position].id.toLong()
+    }
+
     override fun getItemViewType(position: Int): Int {
         val book = books[position]
         return when {
@@ -170,19 +175,30 @@ class ShelvesAdapter(
 
     override fun getItemCount(): Int = shelves.size
 
-    fun notifyBookAdded(shelf: Int) {
-        shelfAdapters.getOrNull(shelf)?.notifyDataSetChanged()
+    override fun getItemId(position: Int): Long {
+        return shelves[position].id.toLong()
     }
+
+    fun notifyBookAdded(shelf: Int) {
+        shelfAdapters.getOrNull(shelf)?.notifyItemInserted(0)
+        shelfLayoutManagers.getOrNull(shelf)?.scrollToPosition(0)
+    }
+
 
     private val shelfAdapters = MutableList(shelves.size) {
         ShelfAdapter(context, mutableListOf())
     }
 
-    var allowEditing = false
+    private val shelfLayoutManagers = MutableList(shelves.size) {
+        LinearLayoutManager(context, LinearLayout.HORIZONTAL, false)
+    }
+
+    var lock = true
 
     fun addShelf() {
         shelfAdapters.add(ShelfAdapter(context, mutableListOf()))
-//        shelfAdapters.add(0, ShelfAdapter(context, mutableListOf()))
+        shelfLayoutManagers.add(LinearLayoutManager(context, LinearLayout.HORIZONTAL, false))
+        notifyItemInserted(shelfAdapters.size - 1)
     }
 
 
@@ -190,12 +206,13 @@ class ShelvesAdapter(
         val shelf = shelves[position]
         holder.shelfTitle.text = shelf.title
         holder.shelfTitle.setCustomFont(PodkovaFont.EXTRA_BOLD)
-        val childLayoutManager = LinearLayoutManager(holder.shelf.context, LinearLayout.HORIZONTAL, false)
-        childLayoutManager.initialPrefetchItemCount = 4
 
-        shelfAdapters[position] = ShelfAdapter(context, shelf.images)
+        shelfLayoutManagers[position] = LinearLayoutManager(context, LinearLayout.HORIZONTAL, false)
 
-        if (allowEditing) {
+        shelfAdapters[position] = ShelfAdapter(context, shelf.books)
+        shelfAdapters[position].setHasStableIds(true)
+
+        if (!lock) {
             holder.header.on.visibility = VISIBLE
         }
 
@@ -219,8 +236,9 @@ class ShelvesAdapter(
 
 
         holder.shelf.apply {
-            layoutManager = childLayoutManager
+            layoutManager = shelfLayoutManagers[position]//childLayoutManager
             adapter = shelfAdapters[position]
+            itemAnimator = null
         }
 
     }

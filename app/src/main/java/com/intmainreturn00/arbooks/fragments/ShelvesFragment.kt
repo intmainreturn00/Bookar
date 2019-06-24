@@ -1,7 +1,6 @@
 package com.intmainreturn00.arbooks.fragments
 
 
-import android.graphics.Typeface
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -65,11 +64,10 @@ class ShelvesFragment : Fragment() {
             model.lastProcessedBook.observe(this, Observer {
                 val index = model.shelfIndex
                 if (index >= shelvesModels.size) {
-                    shelvesModels.add(ShelfModel(model.shelfTitle, mutableListOf()))
+                    shelvesModels.add(ShelfModel(index, model.shelfTitle, mutableListOf()))
                     (shelves.adapter as ShelvesAdapter).addShelf()
-                    (shelves.adapter as ShelvesAdapter).notifyDataSetChanged()
                 }
-                shelvesModels[index].images.add(0, it)
+                shelvesModels[index].books.add(0, it)
                 (shelves.adapter as ShelvesAdapter).notifyBookAdded(index)
             })
 
@@ -81,10 +79,12 @@ class ShelvesFragment : Fragment() {
                 if (done) {
                     progress.visibility = INVISIBLE
                     ar.visibility = VISIBLE
-                    (shelves.adapter as ShelvesAdapter).allowEditing = true
-                    (shelves.adapter as ShelvesAdapter).notifyDataSetChanged()
+                    (shelves.adapter as ShelvesAdapter).lock = false
+                    (shelves.adapter as ShelvesAdapter).notifyItemRangeChanged(
+                        0,
+                        (shelves.adapter as ShelvesAdapter).itemCount
+                    )
                     status.text = resources.getString(R.string.processing_complete)
-                    //toolbar.visibility = GONE
                     bottom.visibility = VISIBLE
                 }
             })
