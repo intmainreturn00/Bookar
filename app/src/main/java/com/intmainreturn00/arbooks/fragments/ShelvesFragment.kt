@@ -71,18 +71,19 @@ class ShelvesFragment : Fragment() {
             })
 
             if (model.processingDone.value == false) {
+                // if previously loaded...
                 model.loadCovers()
-            }
 
-            model.lastProcessedBook.observe(this, Observer {
-                val index = model.shelfIndex
-                if (index >= shelvesModels.size) {
-                    shelvesModels.add(ShelfModel(index, model.shelfTitle, mutableListOf()))
-                    (shelves.adapter as ShelvesAdapter).addShelf()
-                }
-                shelvesModels[index].books.add(0, it)
-                (shelves.adapter as ShelvesAdapter).notifyBookAdded(index)
-            })
+                model.lastProcessedBook.observe(this, Observer {
+                    val index = model.shelfIndex
+                    if (index >= shelvesModels.size) {
+                        shelvesModels.add(ShelfModel(index, model.shelfTitle, mutableListOf()))
+                        (shelves.adapter as ShelvesAdapter).addShelf()
+                    }
+                    shelvesModels[index].books.add(0, it)
+                    (shelves.adapter as ShelvesAdapter).notifyBookAdded(index)
+                })
+            }
 
             model.numProcessed.observe(this, Observer {
                 status.text = String.format(resources.getString(R.string.processed_n_books), it, model.numBooks)

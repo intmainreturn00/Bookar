@@ -206,7 +206,7 @@
         android:layout_height="195dp"
         android:layout_gravity="bottom"
         android:visibility="invisible"
-        android:background="@drawable/recycler_bottom" />
+        android:background="@drawable/bottom_gradient" />
 
     <android.widget.Button
         android:id="@+id/ar"

@@ -1,6 +1,9 @@
 package com.intmainreturn00.arbooks.fragments;
 
 import android.Manifest;
+import android.view.View;
+import android.view.WindowManager;
+import androidx.fragment.app.FragmentActivity;
 import com.google.ar.sceneform.ux.ArFragment;
 
 public class WritingArFragment extends ArFragment {
@@ -14,6 +17,10 @@ public class WritingArFragment extends ArFragment {
             System.arraycopy(additionalPermissions, 0, permissions, 1, additionalPermissions.length);
         }
         return permissions;
+    }
+
+    protected void onWindowFocusChanged(boolean hasFocus) {
+
     }
 
 }
