@@ -103,29 +103,9 @@ fun constructFromReview(review: Review): BookModel = when {
 fun constructAuthorsTitle(authors: List<Author>): List<String> = authors.take(2).map { it.name }
 
 
-//suspend fun loadCoverRenderable(context: Context) = ViewRenderable.builder()
-//    .setView(context, R.layout.cover)
-//    .build().await()
-
 suspend fun loadCoverRenderable(context: Context, type: CoverType) = when (type) {
     CoverType.COVER -> ViewRenderable.builder().setView(context, R.layout.cover).build().await()
     else -> ViewRenderable.builder().setView(context, R.layout.book_template).build().await()
-}
-
-
-suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
-    withContext(Dispatchers.IO) {
-        for (book in books) {
-            val btm = downloadImage(context, book.coverUrl)
-            btm?.let {
-                book.coverWidth = it.width
-                book.coverHeight = it.height
-                withContext(Dispatchers.Default) {
-                    book.coverColor = ColorArt(btm).backgroundColor
-                }
-            }
-        }
-    }
 }
 
 
@@ -173,12 +153,12 @@ fun makeGrid(data: List<BookModel>): MutableList<ARBook> {
 
         res.add(
             ARBook(
-                book.title,
-                book.authors,
-                makeSize(book.pages),
-                Vector3(x, elevationMap[i], z),
-                makeAngle(),
-                book.cover,
+                title =  book.title,
+                authors = book.authors,
+                size = makeSize(book.pages),
+                position = Vector3(x, elevationMap[i], z),
+                rotation = makeAngle(),
+                coverUrl = book.cover,
                 coverType = book.coverType,
                 coverWidth = book.coverWidth,
                 coverHeight = book.coverHeight,
@@ -231,9 +211,6 @@ fun makeRandomColor() =
         6 -> Color.parseColor("#FF9800")
         else -> Color.WHITE
     }
-
-
-fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
 
 fun formatProfileAge(joined: String): Pair<String, String> {

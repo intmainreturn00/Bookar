@@ -35,8 +35,6 @@
             android:name="com.google.ar.core"
             android:value="required" />
 
-        <activity android:name=".ARActivity" android:screenOrientation="portrait"/>
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.ar.provider"
