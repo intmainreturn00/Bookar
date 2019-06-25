@@ -9,9 +9,20 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.ar.core.Anchor
+import com.google.ar.core.Plane
+import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.Node
+import com.google.ar.sceneform.collision.Box
+import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
 
@@ -40,8 +51,6 @@ class ARFragment : ScopedFragment() {
             fragment.onUpdate(frameTime)
         }
 
-        launch { loadResources() }
-
         activity?.run {
             val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
             PodkovaFont.EXTRA_BOLD.apply(ar_books_num, ar_books, ar_pages_num, ar_pages, ar_age_num, ar_age, ar_shelf_title)
@@ -57,19 +66,29 @@ class ARFragment : ScopedFragment() {
 
             if (model.selectedShelves.size == 1) {
                 ar_shelf_title.visibility = VISIBLE
-                ar_shelf_title.text = model.shelves[model.selectedShelves.first()].name
+                ar_shelf_title.text = model.selectedShelves.first()
             } else {
                 ar_shelf_title.visibility = INVISIBLE
             }
 
             hideSystemUI()
-
-            //header.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             header.viewTreeObserver.addOnWindowFocusChangeListener { hasFocus ->
                 if (hasFocus)
                     hideSystemUI()
             }
 
+            model.moveBooksToAR(PLACEMENT.GRID)
+            model.arbooks.observe(this, Observer {
+                ar_grid.visibility = VISIBLE
+            })
+
+            ar_grid.setOnClickListener {
+                isHitPlane()?.let {
+                    launch {
+                        placeBooks(it)
+                    }
+                }
+            }
         }
 
     }
@@ -79,16 +98,146 @@ class ARFragment : ScopedFragment() {
         bookModel = ModelRenderable.builder()
             .setSource(fragment.context, Uri.parse("book1.sfb"))
             .build().await()
-        //ar_grid.visibility = VISIBLE
-        //ar_controls.visibility = VISIBLE
+    }
+
+    private fun isHitPlane(): Anchor? {
+        val frame = fragment.arSceneView.arFrame
+        val point = getScreenCenter()
+        if (frame != null) {
+            val hits = frame.hitTest(point.x.toFloat(), point.y.toFloat())
+            for (hit in hits) {
+                val trackable = hit.trackable
+                if (trackable is Plane && trackable.isPoseInPolygon(hit.hitPose)) {
+                    return hit.createAnchor()
+                }
+            }
+        }
+        return null
     }
 
 
-    private fun getScreenCenter(): Point? {
-        activity?.findViewById<View>(android.R.id.content)?.let {
-            return@let Point(it.width / 2, it.height / 2)
+    private suspend fun placeBooks(anchor: Anchor) {
+        val anchorNode = AnchorNode(anchor)
+        fragment.arSceneView.scene.addChild(anchorNode)
+        fragment.arSceneView.planeRenderer.isVisible = false
+        ar_grid.visibility = INVISIBLE
+        ar_controls.visibility = INVISIBLE
+
+        loadResources()
+
+        for (book in ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).arbooks.value!!) {
+            val bookNode = makeBookNode(bookModel.makeCopy(), book)
+            addCover(book, bookNode)
+            bookNode.setParent(anchorNode)
         }
-        return null
+
+        ar_controls.visibility = VISIBLE
+    }
+
+    private fun makeBookNode(model: ModelRenderable, book: ARBook): Node {
+        val bookNode = Node()
+        bookNode.renderable = model
+
+        bookNode.localScale = Vector3(
+            book.size.x / modelSize.x,
+            book.size.y / modelSize.y,
+            book.size.z / modelSize.z
+        )
+        bookNode.localRotation = book.rotation
+        bookNode.localPosition = book.position
+        return bookNode
+    }
+
+    private suspend fun addCover(book: ARBook, bookNode: Node) {
+        val btm = downloadImage(context!!, book.coverUrl)
+        if (btm != null) {
+            val coverNode = Node()
+            coverNode.renderable = loadCoverRenderable(context!!, book.coverType)
+            val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
+
+            val img = (coverNode.renderable as ViewRenderable).view as ImageView
+
+            coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
+
+            val realXm = book.coverWidth / dpToPix(context!!,250f)
+            val realYm = book.coverHeight / dpToPix(context!!, 250f)
+
+            img.setImageBitmap(btm)
+
+            coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
+            coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
+
+            coverNode.setParent(bookNode)
+
+            paintBook(bookNode, book.coverColor)
+
+        } else {
+
+            val coverNode = Node()
+            coverNode.renderable = loadCoverRenderable(context!!, book.coverType)
+            val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
+
+            val root = (coverNode.renderable as ViewRenderable).view as FrameLayout
+            coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
+
+            val realXm = book.coverWidth / dpToPix(context!!,250f)
+            val realYm = book.coverHeight / dpToPix(context!!, 250f)
+
+            root.findViewById<TextView>(R.id.title)?.text = book.title
+            root.findViewById<TextView>(R.id.title)?.setTextColor(book.textColor)
+            root.findViewById<TextView>(R.id.author1)?.setTextColor(book.textColor)
+            root.findViewById<TextView>(R.id.author2)?.setTextColor(book.textColor)
+
+            root.findViewById<View>(R.id.background).setBackgroundColor(book.coverColor)
+
+            when (book.authors.size) {
+                0 -> {
+                    root.findViewById<TextView>(R.id.author1)?.text = ""
+                    root.findViewById<TextView>(R.id.author2)?.text = ""
+                    root.findViewById<TextView>(R.id.author1)?.visibility = View.GONE
+                    root.findViewById<TextView>(R.id.author2)?.visibility = View.GONE
+                }
+                1 -> {
+                    root.findViewById<TextView>(R.id.author1)?.text = book.authors[0]
+                    root.findViewById<TextView>(R.id.author2)?.text = ""
+                    root.findViewById<TextView>(R.id.author1)?.visibility = VISIBLE
+                    root.findViewById<TextView>(R.id.author2)?.visibility = View.GONE
+                }
+                else -> {
+                    root.findViewById<TextView>(R.id.author1)?.text = book.authors[0]
+                    root.findViewById<TextView>(R.id.author2)?.text = book.authors[1]
+                    root.findViewById<TextView>(R.id.author1)?.visibility = VISIBLE
+                    root.findViewById<TextView>(R.id.author2)?.visibility = VISIBLE
+                }
+            }
+
+            coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
+            coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
+
+            coverNode.setParent(bookNode)
+
+            paintBook(bookNode, book.coverColor)
+        }
+    }
+
+
+    private fun paintBook(bookNode: Node, color: Int = makeRandomColor()) {
+        val backgroundColor = com.google.ar.sceneform.rendering.Color(color)
+
+        val mat1 = bookNode.renderable!!.getMaterial(1)
+        mat1.setFloat3("baseColorTint", backgroundColor)
+        bookNode.renderable!!.setMaterial(1, mat1)
+
+        val mat2 = bookNode.renderable!!.getMaterial(2)
+        mat2.setFloat3("baseColorTint", backgroundColor)
+        bookNode.renderable!!.setMaterial(2, mat2)
+
+    }
+
+
+    private fun getScreenCenter(): Point {
+        val screen = activity!!.findViewById<View>(android.R.id.content)
+        return Point(screen.width / 2, screen.height / 2)
     }
 
     private fun hideSystemUI() {

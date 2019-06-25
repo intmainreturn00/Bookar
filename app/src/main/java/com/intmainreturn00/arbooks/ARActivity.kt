@@ -121,7 +121,7 @@ class ARActivity : ScopedAppActivity() {
         val btm = downloadImage(this@ARActivity, book.coverUrl)
         if (btm != null) {
             val coverNode = Node()
-            coverNode.renderable = loadCoverRenderable(this)
+            coverNode.renderable = loadCoverRenderable(this, book.coverType)
             val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
 
             val img = (coverNode.renderable as ViewRenderable).view as ImageView

@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.shelf.view.*
 
 data class ShelfModel(
     val id: Int,
-    val title: String = "",
+    val name: String = "",
     val books: MutableList<BookModel>
 )
 
@@ -44,22 +44,18 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
     var gray = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = when (viewType) {
-        TYPE_COVER -> CoverViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false))
-        TYPE_TEMPLATE1 -> TemplateViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.book_template1, parent, false), TYPE_TEMPLATE1
-        )
-        TYPE_TEMPLATE2 -> TemplateViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.book_template2, parent, false), TYPE_TEMPLATE2
+        CoverType.COVER.value -> CoverViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false)
         )
         else -> TemplateViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.book_template3, parent, false), TYPE_TEMPLATE3
+            LayoutInflater.from(parent.context).inflate(R.layout.book_template_shadow, parent, false), viewType
         )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val book = books[position]
         when (getItemViewType(position)) {
-            TYPE_COVER -> {
+            CoverType.COVER.value -> {
                 val coverHolder = holder as CoverViewHolder
                 GlideApp.with(context).load(book.cover).into(coverHolder.img)
                 holder.img.gray(gray)
@@ -70,6 +66,11 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
                 templateHolder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
                 templateHolder.author1.setCustomFont(PodkovaFont.REGULAR)
                 templateHolder.author2.setCustomFont(PodkovaFont.REGULAR)
+
+                templateHolder.background.setBackgroundColor(coverBackgroundColor(context, book.coverType))
+                templateHolder.title.setTextColor(coverTextColor(context, book.coverType))
+                templateHolder.author1.setTextColor(coverTextColor(context, book.coverType))
+                templateHolder.author2.setTextColor(coverTextColor(context, book.coverType))
                 templateHolder.gray(gray)
                 when (book.authors.size) {
                     0 -> {
@@ -101,15 +102,7 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
         return books[position].id.toLong()
     }
 
-    override fun getItemViewType(position: Int): Int {
-        val book = books[position]
-        return when {
-            book.cover.isNotEmpty() -> TYPE_COVER
-            position % 3 == 0 -> TYPE_TEMPLATE1
-            position % 3 == 1 -> TYPE_TEMPLATE2
-            else -> TYPE_TEMPLATE3
-        }
-    }
+    override fun getItemViewType(position: Int): Int = books[position].coverType.value
 
     inner class CoverViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val img: ImageView = itemView.img
@@ -129,43 +122,21 @@ class ShelfAdapter(val context: Context, private val books: MutableList<BookMode
                 author1.setTextColor(context.resources.getColor(R.color.grey_font))
                 author2.setTextColor(context.resources.getColor(R.color.grey_font))
             } else {
-                when (type) {
-                    TYPE_TEMPLATE1 -> {
-                        background.setBackgroundColor(context.resources.getColor(R.color.red))
-                        title.setTextColor(context.resources.getColor(R.color.orange))
-                        author1.setTextColor(context.resources.getColor(R.color.orange))
-                        author2.setTextColor(context.resources.getColor(R.color.orange))
-                    }
-                    TYPE_TEMPLATE2 -> {
-                        background.setBackgroundColor(context.resources.getColor(R.color.orange))
-                        title.setTextColor(context.resources.getColor(R.color.dark))
-                        author1.setTextColor(context.resources.getColor(R.color.dark))
-                        author2.setTextColor(context.resources.getColor(R.color.dark))
-                    }
-                    else -> {
-                        background.setBackgroundColor(context.resources.getColor(R.color.dark))
-                        title.setTextColor(context.resources.getColor(R.color.orange))
-                        author1.setTextColor(context.resources.getColor(R.color.orange))
-                        author2.setTextColor(context.resources.getColor(R.color.orange))
-                    }
-                }
+                background.setBackgroundColor(coverBackgroundColor(context, CoverType.valueOf(type)))
+                title.setTextColor(coverTextColor(context, CoverType.valueOf(type)))
+                author1.setTextColor(coverTextColor(context, CoverType.valueOf(type)))
+                author2.setTextColor(coverTextColor(context, CoverType.valueOf(type)))
             }
         }
     }
 
-    companion object {
-        private const val TYPE_COVER = 0
-        private const val TYPE_TEMPLATE1 = 1
-        private const val TYPE_TEMPLATE2 = 2
-        private const val TYPE_TEMPLATE3 = 3
-    }
 }
 
 
 class ShelvesAdapter(
     val context: Context,
     private val shelves: MutableList<ShelfModel>,
-    val onShelf: (on: Boolean, position: Int) -> Unit
+    val onShelf: (on: Boolean, shelfName: String) -> Unit
 ) : RecyclerView.Adapter<ShelvesAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -204,7 +175,7 @@ class ShelvesAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val shelf = shelves[position]
-        holder.shelfTitle.text = shelf.title
+        holder.shelfTitle.text = shelf.name
         holder.shelfTitle.setCustomFont(PodkovaFont.EXTRA_BOLD)
 
         shelfLayoutManagers[position] = LinearLayoutManager(context, LinearLayout.HORIZONTAL, false)
@@ -223,14 +194,14 @@ class ShelvesAdapter(
                 holder.shelfTitle.alpha = 0.4f
                 shelfAdapters.getOrNull(position)?.gray = true
                 shelfAdapters.getOrNull(position)?.notifyDataSetChanged()
-                onShelf(false, position)
+                onShelf(false, shelf.name)
             } else {
                 holder.on.tag = "on"
                 holder.on.setImageResource(R.drawable.on)
                 holder.shelfTitle.alpha = 1f
                 shelfAdapters.getOrNull(position)?.gray = false
                 shelfAdapters.getOrNull(position)?.notifyDataSetChanged()
-                onShelf(true, position)
+                onShelf(true, shelf.name)
             }
         }
 

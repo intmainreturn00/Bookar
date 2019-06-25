@@ -48,11 +48,11 @@ class ShelvesFragment : Fragment() {
 
             shelves.apply {
                 layoutManager = LinearLayoutManager(this@run, RecyclerView.VERTICAL, false)
-                adapter = ShelvesAdapter(this@run, shelvesModels) { on: Boolean, position: Int ->
+                adapter = ShelvesAdapter(this@run, shelvesModels) { on: Boolean, shelfName: String ->
                     if (on) {
-                        model.selectedShelves.add(position)
+                        model.selectedShelves.add(shelfName)
                     } else {
-                        model.selectedShelves.remove(position)
+                        model.selectedShelves.remove(shelfName)
                     }
                     if (model.selectedShelves.size > 0) {
                         ar.visibility = VISIBLE
@@ -71,7 +71,7 @@ class ShelvesFragment : Fragment() {
             })
 
             if (model.processingDone.value == false) {
-                // if previously loaded...
+                // if previously NOT loaded...
                 model.loadCovers()
 
                 model.lastProcessedBook.observe(this, Observer {
@@ -83,6 +83,8 @@ class ShelvesFragment : Fragment() {
                     shelvesModels[index].books.add(0, it)
                     (shelves.adapter as ShelvesAdapter).notifyBookAdded(index)
                 })
+            } else {
+                model.selectedShelves.addAll(model.shelves.map { it.name })
             }
 
             model.numProcessed.observe(this, Observer {

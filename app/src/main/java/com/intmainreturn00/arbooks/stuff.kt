@@ -23,49 +23,94 @@ data class BookModel(
     val title: String,
     val authors: List<String>,
     val pages: Int?,
+    val rating: Int?,
+    val readCount: Int?,
+    var coverType: CoverType,
     var cover: String = "",
+    var textColor: Int = Color.WHITE,
+    var coverColor: Int = Color.WHITE,
+    var coverWidth: Int = 1,
+    var coverHeight: Int = 1
+)
+
+
+enum class CoverType(val value: Int) {
+    COVER(0),
+    TEMPLATE1(1),
+    TEMPLATE2(2),
+    TEMPLATE3(3);
+
+    companion object {
+        fun valueOf(value: Int) = values().find { it.value == value } ?: COVER
+        fun makeRandomTemplate() = valueOf(Random.nextInt(3) + 1)
+    }
+}
+
+data class ARBook(
+    val title: String,
+    val authors: List<String>,
+    val size: Vector3,
+    val position: Vector3,
+    val rotation: Quaternion,
+    val coverUrl: String,
+    var coverType: CoverType,
+    var coverWidth: Int = 1,
+    var coverHeight: Int = 1,
+    var textColor: Int = Color.WHITE,
     var coverColor: Int = Color.WHITE
 )
+
+
+enum class PLACEMENT { GRID, TOWER }
+
+
+
+fun coverBackgroundColor(context: Context, type: CoverType): Int = when (type) {
+    CoverType.TEMPLATE1 -> context.getColor(R.color.red)
+    CoverType.TEMPLATE2 -> context.getColor(R.color.orange)
+    else -> context.getColor(R.color.dark)
+}
+
+fun coverTextColor(context: Context, type: CoverType): Int = when (type) {
+    CoverType.TEMPLATE1 -> context.getColor(R.color.orange)
+    CoverType.TEMPLATE2 -> context.getColor(R.color.dark)
+    else -> context.getColor(R.color.orange)
+}
+
 
 fun constructFromReview(review: Review): BookModel = when {
     !review.book.imageUrl.contains("nophoto") ->
         BookModel(
             review.book.id.toInt(), review.book.titleWithoutSeries,
             constructAuthorsTitle(review.book.authors),
-            review.book.numPages, review.book.imageUrl
+            review.book.numPages, review.rating, review.readCount, CoverType.COVER, review.book.imageUrl
         )
 
     review.book.isbn.isNotEmpty() ->
         BookModel(
             review.book.id.toInt(), review.book.titleWithoutSeries,
             constructAuthorsTitle(review.book.authors),
-            review.book.numPages, makeOpenlibLink(review.book.isbn)
+            review.book.numPages, review.rating, review.readCount, CoverType.COVER, makeOpenlibLink(review.book.isbn)
         )
 
     else -> BookModel(
         review.book.id.toInt(), review.book.titleWithoutSeries,
         constructAuthorsTitle(review.book.authors),
-        review.book.numPages, ""
+        review.book.numPages, review.rating, review.readCount, CoverType.COVER, ""
     )
 }
 
 fun constructAuthorsTitle(authors: List<Author>): List<String> = authors.take(2).map { it.name }
 
 
-data class ARBook(
-    val size: Vector3,
-    val position: Vector3,
-    val rotation: Quaternion,
-    val coverUrl: String,
-    var coverWidth: Int = 1,
-    var coverHeight: Int = 1,
-    var coverColor: Int = Color.WHITE
-)
+//suspend fun loadCoverRenderable(context: Context) = ViewRenderable.builder()
+//    .setView(context, R.layout.cover)
+//    .build().await()
 
-
-suspend fun loadCoverRenderable(context: Context) = ViewRenderable.builder()
-    .setView(context, R.layout.cover)
-    .build().await()
+suspend fun loadCoverRenderable(context: Context, type: CoverType) = when (type) {
+    CoverType.COVER -> ViewRenderable.builder().setView(context, R.layout.cover).build().await()
+    else -> ViewRenderable.builder().setView(context, R.layout.book_template).build().await()
+}
 
 
 suspend fun prefetchCovers(context: Context, books: List<ARBook>) {
@@ -128,10 +173,17 @@ fun makeGrid(data: List<BookModel>): MutableList<ARBook> {
 
         res.add(
             ARBook(
+                book.title,
+                book.authors,
                 makeSize(book.pages),
                 Vector3(x, elevationMap[i], z),
                 makeAngle(),
-                book.cover
+                book.cover,
+                coverType = book.coverType,
+                coverWidth = book.coverWidth,
+                coverHeight = book.coverHeight,
+                coverColor = book.coverColor,
+                textColor = book.textColor
             )
         )
 

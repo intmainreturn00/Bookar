@@ -2,16 +2,15 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/img"
-    android:layout_width="85dp"
-    android:layout_height="130dp"
-    android:layout_marginEnd="35dp"
-    android:background="@drawable/shadow">
+    android:layout_width="75dp"
+    android:layout_height="120dp"
+    android:layout_marginEnd="35dp">
 
     <View
         android:id="@+id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/orange" />
+        android:background="@color/red" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,11 +28,10 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxWidth="65dp"
-            android:maxLines="3"
             android:hyphenationFrequency="normal"
+            android:maxLines="3"
             android:text="The Name of the Wind"
-            android:textColor="@color/dark"
-            android:textSize="6sp"
+            android:textColor="@color/orange"
             app:autoSizeMaxTextSize="14sp"
             app:autoSizeMinTextSize="6sp"
             app:autoSizeTextType="uniform" />
@@ -51,7 +49,7 @@
             android:maxWidth="65dp"
             android:maxLines="1"
             android:text="Rothfuss, Patrick"
-            android:textColor="@color/dark"
+            android:textColor="@color/orange"
             app:autoSizeMaxTextSize="10sp"
             app:autoSizeMinTextSize="6sp"
             app:autoSizeTextType="uniform" />
@@ -70,7 +68,7 @@
             android:maxWidth="65dp"
             android:maxLines="1"
             android:text="Rothfuss, Patrick2"
-            android:textColor="@color/dark"
+            android:textColor="@color/orange"
             app:autoSizeMaxTextSize="10sp"
             app:autoSizeMinTextSize="6sp"
             app:autoSizeTextType="uniform" />
