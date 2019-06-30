@@ -6,8 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
+import android.view.View.*
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -27,8 +26,10 @@ import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
 
 import kotlinx.android.synthetic.main.fragment_ar.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class ARFragment : ScopedFragment() {
@@ -36,6 +37,10 @@ class ARFragment : ScopedFragment() {
     private lateinit var fragment: ArFragment
     private lateinit var bookModel: ModelRenderable
     private val modelSize = Vector3(0.14903799f, 0.038000144f, 0.2450379f)
+    private var anchorNode: AnchorNode? = null
+    private val nodes = mutableListOf<Node>()
+    private var rootAnchor: Anchor? = null
+    private var currentPlacement: PLACEMENT = PLACEMENT.GRID
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,7 +58,15 @@ class ARFragment : ScopedFragment() {
 
         activity?.run {
             val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
-            PodkovaFont.EXTRA_BOLD.apply(ar_books_num, ar_books, ar_pages_num, ar_pages, ar_age_num, ar_age, ar_shelf_title)
+            PodkovaFont.EXTRA_BOLD.apply(
+                ar_books_num,
+                ar_books,
+                ar_pages_num,
+                ar_pages,
+                ar_age_num,
+                ar_age,
+                ar_shelf_title
+            )
             PodkovaFont.REGULAR.apply(ar_share)
 
             ar_books_num.text = model.numBooks.toString()
@@ -68,29 +81,58 @@ class ARFragment : ScopedFragment() {
                 ar_shelf_title.visibility = VISIBLE
                 ar_shelf_title.text = model.selectedShelves.first()
             } else {
-                ar_shelf_title.visibility = INVISIBLE
+                ar_shelf_title.visibility = GONE
             }
+
+            ar_first_placement.visibility = VISIBLE
+            ar_controls.visibility = GONE
 
             hideSystemUI()
             header.viewTreeObserver.addOnWindowFocusChangeListener { hasFocus ->
                 if (hasFocus)
                     hideSystemUI()
             }
+        }
 
-            model.moveBooksToAR(PLACEMENT.GRID)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        activity?.run {
+            val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
+
             model.arbooks.observe(this, Observer {
-                ar_grid.visibility = VISIBLE
+                rootAnchor?.let { launch { placeBooks(it) } }
             })
 
-            ar_grid.setOnClickListener {
+            ar_first_placement.setOnClickListener {
+                isHitPlane()?.let {
+                    model.moveBooksToAR(PLACEMENT.GRID)
+                    rootAnchor = it
+                    ar_first_placement.visibility = GONE
+                }
+            }
+
+            ar_placement.setOnClickListener {
                 isHitPlane()?.let {
                     launch {
-                        placeBooks(it)
+                        ar_controls.visibility = GONE
+                        cleanupAll()
+                        rootAnchor = it
+                        if (currentPlacement == PLACEMENT.GRID) {
+                            currentPlacement = PLACEMENT.TOWER
+                            ar_placement.setImageResource(R.drawable.grid)
+                        } else {
+                            currentPlacement = PLACEMENT.GRID
+                            ar_placement.setImageResource(R.drawable.tower)
+
+                        }
+                        model.moveBooksToAR(currentPlacement)
                     }
                 }
             }
         }
-
     }
 
 
@@ -117,16 +159,16 @@ class ARFragment : ScopedFragment() {
 
 
     private suspend fun placeBooks(anchor: Anchor) {
-        val anchorNode = AnchorNode(anchor)
+        anchorNode = AnchorNode(anchor)
         fragment.arSceneView.scene.addChild(anchorNode)
         fragment.arSceneView.planeRenderer.isVisible = false
-        ar_grid.visibility = INVISIBLE
-        ar_controls.visibility = INVISIBLE
+        ar_first_placement.visibility = GONE
+        ar_controls.visibility = GONE
 
         loadResources()
-
         for (book in ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).arbooks.value!!) {
             val bookNode = makeBookNode(bookModel.makeCopy(), book)
+            nodes.add(bookNode)
             addCover(book, bookNode)
             bookNode.setParent(anchorNode)
         }
@@ -159,7 +201,7 @@ class ARFragment : ScopedFragment() {
 
             coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
 
-            val realXm = book.coverWidth / dpToPix(context!!,250f)
+            val realXm = book.coverWidth / dpToPix(context!!, 250f)
             val realYm = book.coverHeight / dpToPix(context!!, 250f)
 
             img.setImageBitmap(btm)
@@ -180,7 +222,7 @@ class ARFragment : ScopedFragment() {
             val root = (coverNode.renderable as ViewRenderable).view as FrameLayout
             coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
 
-            val realXm = book.coverWidth / dpToPix(context!!,250f)
+            val realXm = book.coverWidth / dpToPix(context!!, 250f)
             val realYm = book.coverHeight / dpToPix(context!!, 250f)
 
             root.findViewById<TextView>(R.id.title)?.text = book.title
@@ -235,6 +277,15 @@ class ARFragment : ScopedFragment() {
     }
 
 
+    private fun cleanupAll() {
+        if (anchorNode != null) {
+            for (n in nodes) {
+                anchorNode!!.removeChild(n)
+            }
+        }
+    }
+
+
     private fun getScreenCenter(): Point {
         val screen = activity!!.findViewById<View>(android.R.id.content)
         return Point(screen.width / 2, screen.height / 2)
@@ -243,11 +294,11 @@ class ARFragment : ScopedFragment() {
     private fun hideSystemUI() {
         activity?.window?.decorView?.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
     private fun showSystemUI() {
@@ -255,8 +306,6 @@ class ARFragment : ScopedFragment() {
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
     }
-
-
 
 
 }

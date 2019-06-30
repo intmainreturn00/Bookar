@@ -44,14 +44,14 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             userId = grapi.getUserId()
             user = grapi.getUser(userId.id)
-            shelves = grapi.getAllShelves(userId.id)//.takeLast(1)
+            shelves = grapi.getAllShelves(userId.id).takeLast(1)
             //.filterIndexed { index, _ -> (index == 1 || index == 3 || index == 2) }
             //.takeLast(2)
 
 
             for (shelf in shelves) {
                 currentLoadingShelf.value = shelf.name
-                val currentReviews = grapi.getAllReviews(userId.id, shelf.name)//.takeLast(1)
+                val currentReviews = grapi.getAllReviews(userId.id, shelf.name).takeLast(5)
 
                 val bookModels = mutableListOf<BookModel>()
                 currentReviews.forEach { review ->
@@ -86,17 +86,17 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
                     downloadImage(getApplication(), book.cover).let {
                         if (it != null) {
-                            book.coverColor = ColorArt(it).backgroundColor
+                            book.coverType = CoverType.COVER
                             book.coverWidth = it.width
                             book.coverHeight = it.height
-                            book.coverType = CoverType.COVER
+                            book.coverColor = ColorArt(it).backgroundColor
                         } else {
                             book.cover = ""
                             book.coverType = CoverType.makeRandomTemplate()
                             book.coverWidth = dpToPix(getApplication<App>(), 75f).toInt()
                             book.coverHeight = dpToPix(getApplication<App>(), 120f).toInt()
-                            book.textColor = coverTextColor(getApplication<App>(), book.coverType)
                             book.coverColor = coverBackgroundColor(getApplication<App>(), book.coverType)
+                            book.textColor = coverTextColor(getApplication<App>(), book.coverType)
                         }
                     }
 
@@ -116,14 +116,12 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 .filter { selectedShelves.contains(it.key) }
                 .flatMap { it.value }
                 .distinct()
-                .sortedWith(
-                    compareBy(
-                        { it.readCount },
-                        { it.rating }
-                    )
-                )
+                .sortedWith(compareBy({ it.readCount }, { it.rating }))
+
             if (type == PLACEMENT.GRID) {
                 arbooks.value = makeGrid(bookModels)
+            } else {
+                arbooks.value = makeTower(bookModels)
             }
         }
     }

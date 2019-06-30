@@ -64,7 +64,6 @@ data class ARBook(
 enum class PLACEMENT { GRID, TOWER }
 
 
-
 fun coverBackgroundColor(context: Context, type: CoverType): Int = when (type) {
     CoverType.TEMPLATE1 -> context.getColor(R.color.red)
     CoverType.TEMPLATE2 -> context.getColor(R.color.orange)
@@ -175,6 +174,51 @@ fun makeGrid(data: List<BookModel>): MutableList<ARBook> {
         } else {
             i++
         }
+    }
+
+    return res
+}
+
+
+fun makeTower(data: List<BookModel>): MutableList<ARBook> {
+    val res = mutableListOf<ARBook>()
+    var x: Float
+    var z: Float
+    var zLayer = 0
+    var i = 5
+
+    val elevationMap = MutableList(16) { 0f }
+
+    for (book in data) {
+
+        x = offsets[i].first * (paperbackWidth + 0.03f)
+        z = offsets[i].second * (paperbackHeight + 0.03f)
+
+        res.add(
+            ARBook(
+                title =  book.title,
+                authors = book.authors,
+                size = makeSize(book.pages),
+                position = Vector3(x, elevationMap[i], z),
+                rotation = makeAngle(),
+                coverUrl = book.cover,
+                coverType = book.coverType,
+                coverWidth = book.coverWidth,
+                coverHeight = book.coverHeight,
+                coverColor = book.coverColor,
+                textColor = book.textColor
+            )
+        )
+
+        elevationMap[i] += res[res.size - 1].size.y
+
+        zLayer++
+//        if (i == 15) {
+//            zLayer++
+//            i = 0
+//        } else {
+//            i++
+//        }
     }
 
     return res
