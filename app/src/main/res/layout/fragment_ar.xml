@@ -180,7 +180,7 @@
             android:textSize="18sp" />
 
         <ImageButton
-            android:id="@+id/ar_refresh"
+            android:id="@+id/ar_shuffle"
             android:layout_width="47dp"
             android:layout_height="47dp"
             android:layout_gravity="center_vertical"

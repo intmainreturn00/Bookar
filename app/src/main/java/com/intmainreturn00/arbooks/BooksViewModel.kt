@@ -51,7 +51,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
             for (shelf in shelves) {
                 currentLoadingShelf.value = shelf.name
-                val currentReviews = grapi.getAllReviews(userId.id, shelf.name).takeLast(5)
+                val currentReviews = grapi.getAllReviews(userId.id, shelf.name)//.takeLast(5)
 
                 val bookModels = mutableListOf<BookModel>()
                 currentReviews.forEach { review ->
@@ -117,6 +117,23 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 .flatMap { it.value }
                 .distinct()
                 .sortedWith(compareBy({ it.readCount }, { it.rating }))
+
+            if (type == PLACEMENT.GRID) {
+                arbooks.value = makeGrid(bookModels)
+            } else {
+                arbooks.value = makeTower(bookModels)
+            }
+        }
+    }
+
+    fun shuffle(type: PLACEMENT) {
+        viewModelScope.launch {
+
+            val bookModels = bookModelsByShelf
+                .filter { selectedShelves.contains(it.key) }
+                .flatMap { it.value }
+                .distinct()
+                .shuffled()
 
             if (type == PLACEMENT.GRID) {
                 arbooks.value = makeGrid(bookModels)

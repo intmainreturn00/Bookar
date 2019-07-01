@@ -133,6 +133,12 @@ class ARFragment : ScopedFragment() {
                 takePhoto(this, fragment, header)
                 ar_controls.visibility = VISIBLE
             }
+
+            ar_shuffle.setOnClickListener {
+                ar_controls.visibility = GONE
+                cleanupAll()
+                model.shuffle(currentPlacement)
+            }
         }
     }
 
