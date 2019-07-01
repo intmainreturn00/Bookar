@@ -200,7 +200,7 @@ fun makeTower(data: List<BookModel>): MutableList<ARBook> {
                 authors = book.authors,
                 size = makeSize(book.pages),
                 position = Vector3(x, elevationMap[i], z),
-                rotation = makeAngle(),
+                rotation = makeAngle(30f),
                 coverUrl = book.cover,
                 coverType = book.coverType,
                 coverWidth = book.coverWidth,
@@ -240,7 +240,7 @@ fun makeSize(pages: Int?) = Vector3(
 )
 
 
-fun makeAngle() = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), 180f + (-7..+7).random())
+fun makeAngle(add: Float = 0f) = Quaternion.axisAngle(Vector3(0.0f, 1.0f, 0.0f), 180f + add + (-7..+7).random())
 
 
 fun makeOpenlibLink(isbn: String) = "https://covers.openlibrary.org/b/isbn/$isbn-L.jpg"
