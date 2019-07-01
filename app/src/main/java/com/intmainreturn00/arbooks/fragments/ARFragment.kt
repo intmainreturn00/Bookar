@@ -6,7 +6,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -24,12 +25,9 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
-
 import kotlinx.android.synthetic.main.fragment_ar.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class ARFragment : ScopedFragment() {
@@ -42,10 +40,7 @@ class ARFragment : ScopedFragment() {
     private var rootAnchor: Anchor? = null
     private var currentPlacement: PLACEMENT = PLACEMENT.GRID
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_ar, container, false)
     }
 
@@ -132,6 +127,12 @@ class ARFragment : ScopedFragment() {
                     }
                 }
             }
+
+            ar_share.setOnClickListener {
+                ar_controls.visibility = GONE
+                takePhoto(this, fragment, header)
+                ar_controls.visibility = VISIBLE
+            }
         }
     }
 
@@ -141,6 +142,7 @@ class ARFragment : ScopedFragment() {
             .setSource(fragment.context, Uri.parse("book1.sfb"))
             .build().await()
     }
+
 
     private fun isHitPlane(): Anchor? {
         val frame = fragment.arSceneView.arFrame
@@ -176,6 +178,7 @@ class ARFragment : ScopedFragment() {
         ar_controls.visibility = VISIBLE
     }
 
+
     private fun makeBookNode(model: ModelRenderable, book: ARBook): Node {
         val bookNode = Node()
         bookNode.renderable = model
@@ -189,6 +192,7 @@ class ARFragment : ScopedFragment() {
         bookNode.localPosition = book.position
         return bookNode
     }
+
 
     private suspend fun addCover(book: ARBook, bookNode: Node) {
         val btm = downloadImage(context!!, book.coverUrl)
@@ -291,6 +295,7 @@ class ARFragment : ScopedFragment() {
         return Point(screen.width / 2, screen.height / 2)
     }
 
+
     private fun hideSystemUI() {
         activity?.window?.decorView?.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE
@@ -300,6 +305,7 @@ class ARFragment : ScopedFragment() {
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
+
 
     private fun showSystemUI() {
         activity?.window?.decorView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE

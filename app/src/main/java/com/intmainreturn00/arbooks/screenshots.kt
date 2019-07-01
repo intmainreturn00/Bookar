@@ -54,15 +54,29 @@ fun saveBitmapToDisk(bitmap: Bitmap, filename: String) {
 }
 
 
-fun takePhoto(context: Context, arFragment: ArFragment) {
-    val filename = generateFilename()
+fun loadBitmapFromView(v: View): Bitmap {
+    val b = Bitmap.createBitmap(v.measuredWidth, v.measuredHeight, Bitmap.Config.ARGB_8888)
+    val c = Canvas(b)
+    v.layout(v.left, v.top, v.right, v.bottom)
+    v.draw(c)
+    return b
+}
+
+
+fun compose(sceneform: Bitmap, header: Bitmap, marginStart: Float, marginTop: Float): Bitmap {
+    val bmOverlay = Bitmap.createBitmap(sceneform.width, sceneform.height, sceneform.config)
+    val canvas = Canvas(bmOverlay)
+    canvas.drawBitmap(sceneform, Matrix(), null)
+    canvas.drawBitmap(header, marginStart, marginTop, null)
+    return bmOverlay
+}
+
+
+fun takePhoto(context: Context, arFragment: ArFragment, header: View) {
+    //val filename = generateFilename()
     val view = arFragment.arSceneView
 
-    // Create a bitmap the size of the scene view.
-    val bitmap = Bitmap.createBitmap(
-        view.width, view.height,
-        Bitmap.Config.ARGB_8888
-    )
+    val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
 
     // Create a handler thread to offload the processing of the image.
     val handlerThread = HandlerThread("PixelCopier")
@@ -70,19 +84,24 @@ fun takePhoto(context: Context, arFragment: ArFragment) {
     // Make the request to copy.
     PixelCopy.request(view, bitmap, { copyResult ->
         if (copyResult == PixelCopy.SUCCESS) {
-            saveBitmapToDisk(bitmap, filename)
+            //saveBitmapToDisk(bitmap, filename)
+            // true
+
+            val headerBtm = loadBitmapFromView(header)
+            val res = compose(bitmap, headerBtm, dpToPix(context, 20f), dpToPix(context, 27f))
 
             val share = Intent(Intent.ACTION_SEND)
             share.type = "image/jpeg"
             val bytes = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+            res.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
             val path = MediaStore.Images.Media.insertImage(
                 context.contentResolver,
-                bitmap, "Title", null
+                res, "Title", null
             )
             val imageUri = Uri.parse(path)
             share.putExtra(Intent.EXTRA_STREAM, imageUri)
             context.startActivity(Intent.createChooser(share, "Select"))
+        } else {
 
         }
         handlerThread.quitSafely()
@@ -96,3 +115,11 @@ fun dpToPix(context: Context, dp: Float): Float =
         dp,
         context.resources.displayMetrics
     )
+
+fun getScreenWidth(): Int {
+    return Resources.getSystem().displayMetrics.widthPixels
+}
+
+fun getScreenHeight(): Int {
+    return Resources.getSystem().displayMetrics.heightPixels
+}
