@@ -182,11 +182,28 @@ class ARFragment : ScopedFragment() {
         ar_controls.visibility = GONE
 
         loadResources()
+
+        val layer = MutableList<MutableList<Node>>(2) { mutableListOf() }
+        var counter = 0
         for (book in ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).arbooks.value!!) {
             val bookNode = makeBookNode(bookModel.makeCopy(), book)
             nodes.add(bookNode)
             addCover(book, bookNode)
+            layer[counter / 16].add(bookNode)
             bookNode.setParent(anchorNode)
+            counter++
+
+            if (counter == 16 * 2 - 1) {
+                // clean up overlapped 0 layer
+                for (node in layer[0]) {
+                    if (node.children.size > 0) {
+                        node.removeChild(node.children[0])
+                    }
+                }
+                layer.removeAt(0)
+                layer.add(mutableListOf())
+                counter = 0
+            }
         }
 
         ar_controls.visibility = VISIBLE

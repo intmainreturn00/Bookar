@@ -211,14 +211,12 @@ fun makeTower(data: List<BookModel>): MutableList<ARBook> {
         )
 
         elevationMap[i] += res[res.size - 1].size.y
+        if (elevationMap[i] > 2f) {
+            return res
+        }
 
         zLayer++
-//        if (i == 15) {
-//            zLayer++
-//            i = 0
-//        } else {
-//            i++
-//        }
+
     }
 
     return res
