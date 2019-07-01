@@ -72,7 +72,7 @@ fun compose(sceneform: Bitmap, header: Bitmap, marginStart: Float, marginTop: Fl
 }
 
 
-fun takePhoto(context: Context, arFragment: ArFragment, header: View) {
+fun takePhoto(context: Context, arFragment: ArFragment, header: View, callback: (path: String) -> Unit) {
     //val filename = generateFilename()
     val view = arFragment.arSceneView
 
@@ -90,19 +90,20 @@ fun takePhoto(context: Context, arFragment: ArFragment, header: View) {
             val headerBtm = loadBitmapFromView(header)
             val res = compose(bitmap, headerBtm, dpToPix(context, 20f), dpToPix(context, 27f))
 
-            val share = Intent(Intent.ACTION_SEND)
-            share.type = "image/jpeg"
+            //val share = Intent(Intent.ACTION_SEND)
+            //share.type = "image/jpeg"
             val bytes = ByteArrayOutputStream()
             res.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
             val path = MediaStore.Images.Media.insertImage(
                 context.contentResolver,
                 res, "Title", null
             )
-            val imageUri = Uri.parse(path)
-            share.putExtra(Intent.EXTRA_STREAM, imageUri)
-            context.startActivity(Intent.createChooser(share, "Select"))
+            header.post { callback(path) }
+            //val imageUri = Uri.parse(path)
+            //share.putExtra(Intent.EXTRA_STREAM, imageUri)
+            //context.startActivity(Intent.createChooser(share, "Select"))
         } else {
-
+            header.post { callback("") }
         }
         handlerThread.quitSafely()
     }, Handler(handlerThread.looper))

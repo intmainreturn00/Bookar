@@ -1,6 +1,7 @@
 package com.intmainreturn00.arbooks.fragments
 
 
+import android.content.Intent
 import android.graphics.Point
 import android.net.Uri
 import android.os.Bundle
@@ -130,8 +131,15 @@ class ARFragment : ScopedFragment() {
 
             ar_share.setOnClickListener {
                 ar_controls.visibility = GONE
-                takePhoto(this, fragment, header)
-                ar_controls.visibility = VISIBLE
+                takePhoto(this, fragment, header) {
+                    ar_controls.visibility = VISIBLE
+                    if (it.isNotEmpty()) {
+                        val share = Intent(Intent.ACTION_SEND)
+                        share.type = "image/jpeg"
+                        share.putExtra(Intent.EXTRA_STREAM, Uri.parse(it))
+                        activity?.startActivity(Intent.createChooser(share, "Select"))
+                    }
+                }
             }
 
             ar_shuffle.setOnClickListener {
