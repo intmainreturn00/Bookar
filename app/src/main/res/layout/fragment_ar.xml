@@ -139,18 +139,20 @@
         android:layout_gravity="bottom|center"
         android:layout_marginBottom="23dp"
         android:background="@drawable/ripple_rounded"
+        android:elevation="0dp"
         android:src="@drawable/grid"
         android:visibility="invisible" />
 
 
     <LinearLayout
         android:id="@+id/ar_controls"
-        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="23dp"
-        android:orientation="horizontal">
+        android:elevation="0dp"
+        android:orientation="horizontal"
+        android:visibility="invisible">
 
         <ImageButton
             android:id="@+id/ar_placement"
@@ -158,6 +160,7 @@
             android:layout_height="47dp"
             android:layout_gravity="center_vertical"
             android:background="@drawable/ripple_rounded"
+            android:elevation="0dp"
             android:src="@drawable/tower" />
 
         <android.widget.Button
@@ -170,6 +173,7 @@
             android:background="@drawable/ripple_rounded"
             android:drawableStart="@drawable/share"
             android:drawablePadding="14dp"
+            android:elevation="0dp"
             android:foregroundGravity="bottom"
             android:paddingStart="18dp"
             android:paddingEnd="18dp"
@@ -185,6 +189,7 @@
             android:layout_height="47dp"
             android:layout_gravity="center_vertical"
             android:background="@drawable/ripple_rounded"
+            android:elevation="0dp"
             android:src="@drawable/refresh" />
 
     </LinearLayout>
