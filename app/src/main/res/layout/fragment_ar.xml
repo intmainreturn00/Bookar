@@ -132,16 +132,33 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ImageButton
+    <LinearLayout
         android:id="@+id/ar_first_placement"
-        android:layout_width="47dp"
-        android:layout_height="47dp"
         android:layout_gravity="bottom|center"
         android:layout_marginBottom="23dp"
-        android:background="@drawable/ripple_rounded"
-        android:elevation="0dp"
-        android:src="@drawable/grid"
-        android:visibility="invisible" />
+        android:orientation="horizontal"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/ar_first_placement_tower"
+            android:layout_width="47dp"
+            android:layout_height="47dp"
+            android:background="@drawable/ripple_rounded"
+            android:elevation="0dp"
+            android:src="@drawable/tower" />
+
+        <ImageButton
+            android:id="@+id/ar_first_placement_grid"
+            android:layout_width="47dp"
+            android:layout_height="47dp"
+            android:layout_marginStart="45dp"
+            android:background="@drawable/ripple_rounded"
+            android:elevation="0dp"
+            android:src="@drawable/grid" />
+
+    </LinearLayout>
 
 
     <LinearLayout

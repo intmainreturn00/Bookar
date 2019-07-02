@@ -102,11 +102,31 @@ class ARFragment : ScopedFragment() {
                 rootAnchor?.let { launch { placeBooks(it) } }
             })
 
-            ar_first_placement.setOnClickListener {
+            ar_first_placement_grid.setOnClickListener {
                 isHitPlane()?.let {
-                    model.moveBooksToAR(PLACEMENT.GRID)
+                    currentPlacement = PLACEMENT.GRID
+                    model.moveBooksToAR(currentPlacement)
                     rootAnchor = it
                     ar_first_placement.visibility = GONE
+                    if (currentPlacement == PLACEMENT.GRID) {
+                        ar_placement.setImageResource(R.drawable.tower)
+                    } else {
+                        ar_placement.setImageResource(R.drawable.grid)
+                    }
+                }
+            }
+
+            ar_first_placement_tower.setOnClickListener {
+                isHitPlane()?.let {
+                    currentPlacement = PLACEMENT.TOWER
+                    model.moveBooksToAR(currentPlacement)
+                    rootAnchor = it
+                    ar_first_placement.visibility = GONE
+                    if (currentPlacement == PLACEMENT.GRID) {
+                        ar_placement.setImageResource(R.drawable.tower)
+                    } else {
+                        ar_placement.setImageResource(R.drawable.grid)
+                    }
                 }
             }
 
@@ -178,7 +198,7 @@ class ARFragment : ScopedFragment() {
         anchorNode = AnchorNode(anchor)
         fragment.arSceneView.scene.addChild(anchorNode)
         fragment.arSceneView.planeRenderer.isVisible = false
-        ar_first_placement.visibility = GONE
+        //ar_first_placement.visibility = GONE
         ar_controls.visibility = GONE
 
         loadResources()
