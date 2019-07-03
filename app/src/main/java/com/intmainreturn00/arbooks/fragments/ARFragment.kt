@@ -2,7 +2,6 @@ package com.intmainreturn00.arbooks.fragments
 
 
 import android.content.ContentValues
-import android.content.Intent
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Point
 import android.media.CamcorderProfile
@@ -18,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.ar.core.Anchor
@@ -35,7 +33,6 @@ import com.intmainreturn00.arbooks.*
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_ar.*
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -75,7 +72,6 @@ class ARFragment : ScopedFragment() {
                 ar_age,
                 ar_shelf_title
             )
-            //PodkovaFont.REGULAR.apply(ar_share)
 
             ar_books_num.text = model.numBooks.toString()
             ar_books.text = resources.getQuantityString(R.plurals.books, model.numBooks)
@@ -114,13 +110,15 @@ class ARFragment : ScopedFragment() {
         activity?.run {
             val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
 
-            model.arbooks.observe(this, Observer {
-                rootAnchor?.let { launch {
-                    placeBooks(it)
-                    if (videoRecorder.isRecording) {
-                        toggleRecording()
+            model.arbooks.observe(this, Observer { arbooks ->
+                rootAnchor?.let { anchor ->
+                    launch {
+                        placeBooks(anchor, arbooks)
+                        if (videoRecorder.isRecording) {
+                            toggleRecording()
+                        }
                     }
-                } }
+                }
             })
 
             ar_first_placement_grid.setOnClickListener {
@@ -179,8 +177,6 @@ class ARFragment : ScopedFragment() {
             toggleRecording()
         }
         job.cancel()
-        println("@@ cancel coroutine root job")
-        //job.cancelChildren()
     }
 
 
@@ -199,12 +195,9 @@ class ARFragment : ScopedFragment() {
 
     private fun toggleRecording() {
         val recording = videoRecorder.onToggleRecord()
-        if (recording) {
-            println("@@ started")
-        } else {
+        if (!recording) {
             val path = videoRecorder.videoPath.absolutePath
             activity?.let {
-                //Toasty.success(it, "Video saved to AR_Books/books", Toast.LENGTH_SHORT, true).show()
                 val t = Toasty.normal(it, "Video saved to AR_Books/")
                 t.setGravity(Gravity.BOTTOM, 0, dpToPix(it, 80f).toInt())
                 t.show()
@@ -213,7 +206,6 @@ class ARFragment : ScopedFragment() {
                 values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
                 values.put(MediaStore.Video.Media.DATA, path)
                 it.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-                println("@@ saved")
             }
         }
     }
@@ -242,18 +234,17 @@ class ARFragment : ScopedFragment() {
     }
 
 
-    private suspend fun placeBooks(anchor: Anchor) {
+    private suspend fun placeBooks(anchor: Anchor, arbooks: List<ARBook>) {
         anchorNode = AnchorNode(anchor)
         fragment.arSceneView.scene.addChild(anchorNode)
         fragment.arSceneView.planeRenderer.isVisible = false
-        //ar_first_placement.visibility = GONE
         ar_controls.visibility = GONE
 
         loadResources()
 
         val layer = MutableList<MutableList<Node>>(2) { mutableListOf() }
         var counter = 0
-        for (book in ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).arbooks.value!!) {
+        for (book in arbooks) {
             if (!isActive) {
                 throw CancellationException()
             }
@@ -301,58 +292,42 @@ class ARFragment : ScopedFragment() {
         if (!isActive) {
             throw CancellationException()
         }
+
+        val coverNode = Node()
+        coverNode.renderable = loadCoverRenderable(context!!, book.coverType)
+
+        val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
+        val realXm = book.coverWidth / dpToPix(context!!, 250f)
+        val realYm = book.coverHeight / dpToPix(context!!, 250f)
+
+        coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
+        coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
+        coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
+
         if (btm != null) {
-            val coverNode = Node()
-            coverNode.renderable = loadCoverRenderable(context!!, book.coverType)
-            val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
-
             val img = (coverNode.renderable as ViewRenderable).view as ImageView
-
-            coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
-
-            val realXm = book.coverWidth / dpToPix(context!!, 250f)
-            val realYm = book.coverHeight / dpToPix(context!!, 250f)
-
             img.setImageBitmap(btm)
-
-            coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
-            coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
-
-            coverNode.setParent(bookNode)
-
-            paintBook(bookNode, book.coverColor)
-
         } else {
-
-            val coverNode = Node()
-            coverNode.renderable = loadCoverRenderable(context!!, book.coverType)
-            val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
-
             val root = (coverNode.renderable as ViewRenderable).view as FrameLayout
-            coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
-
-            val realXm = book.coverWidth / dpToPix(context!!, 250f)
-            val realYm = book.coverHeight / dpToPix(context!!, 250f)
 
             root.findViewById<TextView>(R.id.title)?.text = book.title
             root.findViewById<TextView>(R.id.title)?.setTextColor(book.textColor)
             root.findViewById<TextView>(R.id.author1)?.setTextColor(book.textColor)
             root.findViewById<TextView>(R.id.author2)?.setTextColor(book.textColor)
-
             root.findViewById<View>(R.id.background).setBackgroundColor(book.coverColor)
 
             when (book.authors.size) {
                 0 -> {
                     root.findViewById<TextView>(R.id.author1)?.text = ""
                     root.findViewById<TextView>(R.id.author2)?.text = ""
-                    root.findViewById<TextView>(R.id.author1)?.visibility = View.GONE
-                    root.findViewById<TextView>(R.id.author2)?.visibility = View.GONE
+                    root.findViewById<TextView>(R.id.author1)?.visibility = GONE
+                    root.findViewById<TextView>(R.id.author2)?.visibility = GONE
                 }
                 1 -> {
                     root.findViewById<TextView>(R.id.author1)?.text = book.authors[0]
                     root.findViewById<TextView>(R.id.author2)?.text = ""
                     root.findViewById<TextView>(R.id.author1)?.visibility = VISIBLE
-                    root.findViewById<TextView>(R.id.author2)?.visibility = View.GONE
+                    root.findViewById<TextView>(R.id.author2)?.visibility = GONE
                 }
                 else -> {
                     root.findViewById<TextView>(R.id.author1)?.text = book.authors[0]
@@ -361,14 +336,10 @@ class ARFragment : ScopedFragment() {
                     root.findViewById<TextView>(R.id.author2)?.visibility = VISIBLE
                 }
             }
-
-            coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
-            coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
-
-            coverNode.setParent(bookNode)
-
-            paintBook(bookNode, book.coverColor)
         }
+
+        coverNode.setParent(bookNode)
+        paintBook(bookNode, book.coverColor)
     }
 
 
