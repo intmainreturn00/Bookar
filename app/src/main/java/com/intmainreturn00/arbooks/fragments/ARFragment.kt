@@ -34,7 +34,10 @@ import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_ar.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 
@@ -175,6 +178,9 @@ class ARFragment : ScopedFragment() {
         if (videoRecorder.isRecording) {
             toggleRecording()
         }
+        job.cancel()
+        println("@@ cancel coroutine root job")
+        //job.cancelChildren()
     }
 
 
@@ -248,6 +254,9 @@ class ARFragment : ScopedFragment() {
         val layer = MutableList<MutableList<Node>>(2) { mutableListOf() }
         var counter = 0
         for (book in ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).arbooks.value!!) {
+            if (!isActive) {
+                throw CancellationException()
+            }
             val bookNode = makeBookNode(bookModel.makeCopy(), book)
             nodes.add(bookNode)
             addCover(book, bookNode)
@@ -289,6 +298,9 @@ class ARFragment : ScopedFragment() {
 
     private suspend fun addCover(book: ARBook, bookNode: Node) {
         val btm = downloadImage(context!!, book.coverUrl)
+        if (!isActive) {
+            throw CancellationException()
+        }
         if (btm != null) {
             val coverNode = Node()
             coverNode.renderable = loadCoverRenderable(context!!, book.coverType)

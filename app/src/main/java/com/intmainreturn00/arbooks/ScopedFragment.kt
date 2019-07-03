@@ -7,7 +7,7 @@ import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 
 open class ScopedFragment : Fragment(), CoroutineScope {
-    private val job = Job()
+    protected val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
