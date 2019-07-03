@@ -1,10 +1,15 @@
 package com.intmainreturn00.arbooks.fragments
 
 
+import android.content.ContentValues
 import android.content.Intent
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Point
+import android.media.CamcorderProfile
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -13,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.ar.core.Anchor
@@ -26,6 +32,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
+import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_ar.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
@@ -40,6 +47,8 @@ class ARFragment : ScopedFragment() {
     private val nodes = mutableListOf<Node>()
     private var rootAnchor: Anchor? = null
     private var currentPlacement: PLACEMENT = PLACEMENT.GRID
+    private var videoRecorder = VideoRecorder()
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_ar, container, false)
@@ -63,7 +72,7 @@ class ARFragment : ScopedFragment() {
                 ar_age,
                 ar_shelf_title
             )
-            PodkovaFont.REGULAR.apply(ar_share)
+            //PodkovaFont.REGULAR.apply(ar_share)
 
             ar_books_num.text = model.numBooks.toString()
             ar_books.text = resources.getQuantityString(R.plurals.books, model.numBooks)
@@ -88,6 +97,10 @@ class ARFragment : ScopedFragment() {
                 if (hasFocus)
                     hideSystemUI()
             }
+
+
+            videoRecorder.setSceneView(fragment.arSceneView)
+            videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_1080P, ORIENTATION_PORTRAIT)
         }
 
     }
@@ -99,35 +112,20 @@ class ARFragment : ScopedFragment() {
             val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
 
             model.arbooks.observe(this, Observer {
-                rootAnchor?.let { launch { placeBooks(it) } }
+                rootAnchor?.let { launch {
+                    placeBooks(it)
+                    if (videoRecorder.isRecording) {
+                        toggleRecording()
+                    }
+                } }
             })
 
             ar_first_placement_grid.setOnClickListener {
-                isHitPlane()?.let {
-                    currentPlacement = PLACEMENT.GRID
-                    model.moveBooksToAR(currentPlacement)
-                    rootAnchor = it
-                    ar_first_placement.visibility = GONE
-                    if (currentPlacement == PLACEMENT.GRID) {
-                        ar_placement.setImageResource(R.drawable.tower)
-                    } else {
-                        ar_placement.setImageResource(R.drawable.grid)
-                    }
-                }
+                isHitPlane()?.let { firstPlacement(PLACEMENT.GRID, it, model) }
             }
 
             ar_first_placement_tower.setOnClickListener {
-                isHitPlane()?.let {
-                    currentPlacement = PLACEMENT.TOWER
-                    model.moveBooksToAR(currentPlacement)
-                    rootAnchor = it
-                    ar_first_placement.visibility = GONE
-                    if (currentPlacement == PLACEMENT.GRID) {
-                        ar_placement.setImageResource(R.drawable.tower)
-                    } else {
-                        ar_placement.setImageResource(R.drawable.grid)
-                    }
-                }
+                isHitPlane()?.let { firstPlacement(PLACEMENT.TOWER, it, model) }
             }
 
             ar_placement.setOnClickListener {
@@ -150,22 +148,66 @@ class ARFragment : ScopedFragment() {
             }
 
             ar_share.setOnClickListener {
+                takePhoto(this, fragment, header)
+                val t = Toasty.normal(this, "Image saved to AR_Books/")
+                t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
+                t.show()
+            }
+
+            ar_share.setOnLongClickListener {
                 ar_controls.visibility = GONE
-                takePhoto(this, fragment, header) {
-                    ar_controls.visibility = VISIBLE
-                    if (it.isNotEmpty()) {
-                        val share = Intent(Intent.ACTION_SEND)
-                        share.type = "image/jpeg"
-                        share.putExtra(Intent.EXTRA_STREAM, Uri.parse(it))
-                        activity?.startActivity(Intent.createChooser(share, "Select"))
-                    }
-                }
+                cleanupAll()
+                toggleRecording()
+                model.moveBooksToAR(currentPlacement)
+                true
             }
 
             ar_shuffle.setOnClickListener {
                 ar_controls.visibility = GONE
                 cleanupAll()
                 model.shuffle(currentPlacement)
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (videoRecorder.isRecording) {
+            toggleRecording()
+        }
+    }
+
+
+    private fun firstPlacement(type: PLACEMENT, anchor: Anchor, model: BooksViewModel) {
+        currentPlacement = type
+        model.moveBooksToAR(currentPlacement)
+        rootAnchor = anchor
+        ar_first_placement.visibility = GONE
+        if (currentPlacement == PLACEMENT.GRID) {
+            ar_placement.setImageResource(R.drawable.tower)
+        } else {
+            ar_placement.setImageResource(R.drawable.grid)
+        }
+    }
+
+
+    private fun toggleRecording() {
+        val recording = videoRecorder.onToggleRecord()
+        if (recording) {
+            println("@@ started")
+        } else {
+            val path = videoRecorder.videoPath.absolutePath
+            activity?.let {
+                //Toasty.success(it, "Video saved to AR_Books/books", Toast.LENGTH_SHORT, true).show()
+                val t = Toasty.normal(it, "Video saved to AR_Books/")
+                t.setGravity(Gravity.BOTTOM, 0, dpToPix(it, 80f).toInt())
+                t.show()
+                val values = ContentValues()
+                values.put(MediaStore.Video.Media.TITLE, "BOOKAR Video")
+                values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                values.put(MediaStore.Video.Media.DATA, path)
+                it.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+                println("@@ saved")
             }
         }
     }

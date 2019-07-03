@@ -26,11 +26,13 @@ import android.graphics.Matrix
 import android.util.TypedValue
 import android.view.View
 import android.util.DisplayMetrics
+import android.widget.Toast
+import es.dmoral.toasty.Toasty
 
 
 fun generateFilename(): String {
     val date = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Date())
-    return getExternalStoragePublicDirectory(DIRECTORY_PICTURES).absolutePath + separator + "AR_Books/" + date + "_screenshot.jpg"
+    return getExternalStoragePublicDirectory(DIRECTORY_PICTURES).absolutePath + separator + "BOOKAR/books" + date + ".jpg"
 }
 
 
@@ -72,38 +74,22 @@ fun compose(sceneform: Bitmap, header: Bitmap, marginStart: Float, marginTop: Fl
 }
 
 
-fun takePhoto(context: Context, arFragment: ArFragment, header: View, callback: (path: String) -> Unit) {
-    //val filename = generateFilename()
+fun takePhoto(context: Context, arFragment: ArFragment, header: View) {
+    println("@@ takePhoto ${System.currentTimeMillis()}")
+    val filename = generateFilename()
     val view = arFragment.arSceneView
-
     val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
 
-    // Create a handler thread to offload the processing of the image.
     val handlerThread = HandlerThread("PixelCopier")
     handlerThread.start()
-    // Make the request to copy.
     PixelCopy.request(view, bitmap, { copyResult ->
         if (copyResult == PixelCopy.SUCCESS) {
-            //saveBitmapToDisk(bitmap, filename)
-            // true
-
             val headerBtm = loadBitmapFromView(header)
             val res = compose(bitmap, headerBtm, dpToPix(context, 20f), dpToPix(context, 27f))
-
-            //val share = Intent(Intent.ACTION_SEND)
-            //share.type = "image/jpeg"
-            val bytes = ByteArrayOutputStream()
-            res.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-            val path = MediaStore.Images.Media.insertImage(
-                context.contentResolver,
-                res, "Title", null
-            )
-            header.post { callback(path) }
-            //val imageUri = Uri.parse(path)
-            //share.putExtra(Intent.EXTRA_STREAM, imageUri)
-            //context.startActivity(Intent.createChooser(share, "Select"))
+            saveBitmapToDisk(res, filename)
+            println("@@ takePhoto end ${System.currentTimeMillis()}")
         } else {
-            header.post { callback("") }
+
         }
         handlerThread.quitSafely()
     }, Handler(handlerThread.looper))
