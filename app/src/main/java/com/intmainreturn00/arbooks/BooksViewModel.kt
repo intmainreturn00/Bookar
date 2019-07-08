@@ -51,7 +51,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
             for (shelf in shelves) {
                 currentLoadingShelf.value = shelf.name
-                val currentReviews = grapi.getAllReviews(userId.id, shelf.name)//.takeLast(5)
+                val currentReviews = grapi.getAllReviews(userId.id, shelf.name).takeLast(5)
 
                 val bookModels = mutableListOf<BookModel>()
                 currentReviews.forEach { review ->

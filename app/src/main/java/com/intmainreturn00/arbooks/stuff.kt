@@ -128,7 +128,7 @@ suspend fun downloadImage(context: Context, url: String) = withContext(Dispatche
 }
 
 
-val offsets = listOf(
+val gridOffsets = listOf(
     Pair(-1.5f, -1.5f), Pair(-0.5f, -1.5f), Pair(0.5f, -1.5f), Pair(1.5f, -1.5f),
     Pair(-1.5f, -0.5f), Pair(-0.5f, -0.5f), Pair(0.5f, -0.5f), Pair(1.5f, -0.5f),
     Pair(-1.5f, 0.5f), Pair(-0.5f, 0.5f), Pair(0.5f, 0.5f), Pair(1.5f, 0.5f),
@@ -143,16 +143,16 @@ fun makeGrid(data: List<BookModel>): MutableList<ARBook> {
     var zLayer = 0
     var i = 0
 
-    val elevationMap = MutableList(16) { 0f }
+    val elevationMap = MutableList(gridOffsets.size) { 0f }
 
     for (book in data) {
 
-        x = offsets[i].first * (paperbackWidth + 0.03f)
-        z = offsets[i].second * (paperbackHeight + 0.03f)
+        x = gridOffsets[i].first * (paperbackWidth + 0.03f)
+        z = gridOffsets[i].second * (paperbackHeight + 0.03f)
 
         res.add(
             ARBook(
-                title =  book.title,
+                title = book.title,
                 authors = book.authors,
                 size = makeSize(book.pages),
                 position = Vector3(x, elevationMap[i], z),
@@ -180,26 +180,30 @@ fun makeGrid(data: List<BookModel>): MutableList<ARBook> {
 }
 
 
+val towerOffsets = listOf(
+    Pair(0f, 0f), Pair(-1f, -0.5f), Pair(1f, -0.5f), Pair(-1f, +0.4f), Pair(+1f, +0.6f), Pair(0f, +1.2f)
+)
+
+
 fun makeTower(data: List<BookModel>): MutableList<ARBook> {
     val res = mutableListOf<ARBook>()
     var x: Float
     var z: Float
-    var zLayer = 0
-    var i = 5
+    var towerNum = 0
 
-    val elevationMap = MutableList(16) { 0f }
+    val elevationMap = MutableList(towerOffsets.size) { 0f }
 
     for (book in data) {
 
-        x = offsets[i].first * (paperbackWidth + 0.03f)
-        z = offsets[i].second * (paperbackHeight + 0.03f)
+        x = towerOffsets[towerNum].first * (paperbackWidth + 0.03f)
+        z = towerOffsets[towerNum].second * (paperbackHeight + 0.03f)
 
         res.add(
             ARBook(
-                title =  book.title,
+                title = book.title,
                 authors = book.authors,
                 size = makeSize(book.pages),
-                position = Vector3(x, elevationMap[i], z),
+                position = Vector3(x, elevationMap[towerNum], z),
                 rotation = makeAngle(30f),
                 coverUrl = book.cover,
                 coverType = book.coverType,
@@ -210,12 +214,12 @@ fun makeTower(data: List<BookModel>): MutableList<ARBook> {
             )
         )
 
-        elevationMap[i] += res[res.size - 1].size.y
-        if (elevationMap[i] > 2f) {
-            return res
-        }
+        elevationMap[towerNum] += res[res.size - 1].size.y
 
-        zLayer++
+        when {
+            towerNum != towerOffsets.size - 1 && elevationMap[towerNum] > 1.7f - towerNum * 0.2f -> towerNum++
+            towerNum == towerOffsets.size - 1 && elevationMap[towerNum] > 1.7f - towerNum * 0.2f -> return res
+        }
 
     }
 

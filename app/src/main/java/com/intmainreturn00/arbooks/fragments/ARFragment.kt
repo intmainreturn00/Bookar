@@ -112,12 +112,7 @@ class ARFragment : ScopedFragment() {
 
             model.arbooks.observe(this, Observer { arbooks ->
                 rootAnchor?.let { anchor ->
-                    launch {
-                        placeBooks(anchor, arbooks)
-                        if (videoRecorder.isRecording) {
-                            toggleRecording()
-                        }
-                    }
+                    launch { placeBooks(anchor, arbooks) }
                 }
             })
 
@@ -132,7 +127,8 @@ class ARFragment : ScopedFragment() {
             ar_placement.setOnClickListener {
                 isHitPlane()?.let {
                     launch {
-                        ar_controls.visibility = GONE
+                        ar_placement.visibility = GONE
+                        ar_shuffle.visibility = GONE
                         cleanupAll()
                         rootAnchor = it
                         if (currentPlacement == PLACEMENT.GRID) {
@@ -149,22 +145,30 @@ class ARFragment : ScopedFragment() {
             }
 
             ar_share.setOnClickListener {
-                takePhoto(this, fragment, header)
-                val t = Toasty.normal(this, "Image saved to AR_Books/")
-                t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
-                t.show()
+                if (videoRecorder.isRecording) {
+                    it.background = getDrawable(R.drawable.camera)
+                    toggleRecording()
+                    val t = Toasty.normal(this, "Video saved to AR_Books/")
+                    t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
+                    t.show()
+                } else {
+                    takePhoto(this, fragment, header)
+                    val t = Toasty.normal(this, "Image saved to AR_Books/")
+                    t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
+                    t.show()
+                }
             }
 
             ar_share.setOnLongClickListener {
-                ar_controls.visibility = GONE
-                cleanupAll()
+                it.background = getDrawable(R.drawable.hold)
                 toggleRecording()
-                model.moveBooksToAR(currentPlacement)
                 true
             }
 
             ar_shuffle.setOnClickListener {
-                ar_controls.visibility = GONE
+                ar_placement.visibility = GONE
+                ar_shuffle.visibility = GONE
+
                 cleanupAll()
                 model.shuffle(currentPlacement)
             }
@@ -238,7 +242,8 @@ class ARFragment : ScopedFragment() {
         anchorNode = AnchorNode(anchor)
         fragment.arSceneView.scene.addChild(anchorNode)
         fragment.arSceneView.planeRenderer.isVisible = false
-        ar_controls.visibility = GONE
+        ar_placement.visibility = GONE
+        ar_shuffle.visibility = GONE
 
         loadResources()
 
@@ -269,6 +274,8 @@ class ARFragment : ScopedFragment() {
         }
 
         ar_controls.visibility = VISIBLE
+        ar_placement.visibility = VISIBLE
+        ar_shuffle.visibility = VISIBLE
     }
 
 

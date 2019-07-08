@@ -1,31 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/dark">
-    <item android:id="@android:id/mask">
-        <shape android:shape="oval">
-            <solid android:color="@color/dark" />
-            <corners android:radius="24dp" />
-        </shape>
-    </item>
-
-    <item android:id="@android:id/background">
-        <layer-list>
-            <!-- Larger blue circle in back -->
-            <item>
-                <shape android:shape="oval">
-                    <solid android:color="#FEFCFD"/>
-                    <size android:width="65dp" android:height="65dp"/>
-                </shape>
-            </item>
-            <!-- Smaller red circle in front -->
-            <item>
-                <shape android:shape="oval">
-                    <!-- transparent stroke = larger_circle_size - smaller_circle_size -->
-                    <stroke android:color="@android:color/transparent" android:width="5dp"/>
-                    <solid android:color="#CFD8DD"/>
-                    <!--<size android:width="4dp" android:height="4dp"/>-->
-                </shape>
-            </item>
-        </layer-list>
-    </item>
-</ripple>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/pressed" android:state_pressed="true" />
+    <item android:drawable="@drawable/normal" android:state_focused="true" />
+    <item android:drawable="@drawable/normal" />
+</selector>
