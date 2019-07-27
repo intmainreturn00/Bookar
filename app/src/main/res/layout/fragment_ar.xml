@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.ARFragment">
+    tools:context=".ui.fragments.ARFragment">
 
     <fragment
         android:id="@+id/ar_sceneform_fragment"
-        android:name="com.intmainreturn00.arbooks.fragments.WritingArFragment"
+        android:name="com.intmainreturn00.arbooks.platform.WritingArFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

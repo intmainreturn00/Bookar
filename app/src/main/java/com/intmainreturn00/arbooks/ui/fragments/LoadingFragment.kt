@@ -1,19 +1,26 @@
-package com.intmainreturn00.arbooks.fragments
+package com.intmainreturn00.arbooks.ui.fragments
 
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.intmainreturn00.arbooks.*
+import com.intmainreturn00.arbooks.platform.ScopedFragment
+import com.intmainreturn00.arbooks.ui.PodkovaFont
+import com.intmainreturn00.arbooks.ui.setCustomFont
+import com.intmainreturn00.arbooks.viewmodels.BooksViewModel
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.fragment_loading.*
 import kotlinx.coroutines.launch
 
 class LoadingFragment : ScopedFragment() {
+
+    private val model by activityViewModels<BooksViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,23 +46,11 @@ class LoadingFragment : ScopedFragment() {
             }
         }
 
-        activity?.run {
-            val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
-
-            model.currentLoadingShelf.observe(
-                this,
-                Observer { currentShelf ->
-                    loading.text = String.format(resources.getString(R.string.loading_from), currentShelf)
-                })
-
-            model.booksLoadingDone.observe(
-                this,
-                Observer { done ->
-                    if (done) {
-                        findNavController().navigate(R.id.action_loading_to_shelves)
-                    }
-                })
-        }
+        model.booksLoadingDone.observe(this, Observer { done ->
+                if (done) {
+                    findNavController().navigate(R.id.action_loading_to_shelves)
+                }
+            })
 
     }
 

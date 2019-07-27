@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks
+package com.intmainreturn00.arbooks.ui
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -15,19 +15,11 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import android.content.Intent
-import android.net.Uri
-import androidx.core.content.ContextCompat.startActivity
-import android.provider.MediaStore
-import android.R.layout
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.util.TypedValue
 import android.view.View
-import android.util.DisplayMetrics
-import android.widget.Toast
-import es.dmoral.toasty.Toasty
 
 
 fun generateFilename(): String {
@@ -85,7 +77,12 @@ fun takePhoto(context: Context, arFragment: ArFragment, header: View) {
     PixelCopy.request(view, bitmap, { copyResult ->
         if (copyResult == PixelCopy.SUCCESS) {
             val headerBtm = loadBitmapFromView(header)
-            val res = compose(bitmap, headerBtm, dpToPix(context, 20f), dpToPix(context, 27f))
+            val res = compose(
+                bitmap,
+                headerBtm,
+                dpToPix(context, 20f),
+                dpToPix(context, 27f)
+            )
             saveBitmapToDisk(res, filename)
             println("@@ takePhoto end ${System.currentTimeMillis()}")
         } else {

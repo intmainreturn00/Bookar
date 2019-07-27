@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks.fragments
+package com.intmainreturn00.arbooks.ui.fragments
 
 
 import android.content.ContentValues
@@ -30,6 +30,13 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
+import com.intmainreturn00.arbooks.domain.*
+import com.intmainreturn00.arbooks.platform.ScopedFragment
+import com.intmainreturn00.arbooks.ui.PodkovaFont
+import com.intmainreturn00.arbooks.ui.VideoRecorder
+import com.intmainreturn00.arbooks.ui.dpToPix
+import com.intmainreturn00.arbooks.ui.takePhoto
+import com.intmainreturn00.arbooks.viewmodels.BooksViewModel
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_ar.*
 import kotlinx.coroutines.CancellationException
@@ -37,6 +44,9 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+// Interface Adapters
+fun MyVector3.toVector3() = Vector3(x, y, z)
+fun MyQuaternion.toQuaternion() = Quaternion.axisAngle(Vector3(x, y, z), w)
 
 class ARFragment : ScopedFragment() {
 
@@ -46,9 +56,8 @@ class ARFragment : ScopedFragment() {
     private var anchorNode: AnchorNode? = null
     private val nodes = mutableListOf<Node>()
     private var rootAnchor: Anchor? = null
-    private var currentPlacement: PLACEMENT = PLACEMENT.GRID
+    private var currentAllocationType: AllocationType = AllocationType.GridType
     private var videoRecorder = VideoRecorder()
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_ar, container, false)
@@ -81,9 +90,9 @@ class ARFragment : ScopedFragment() {
             ar_age_num.text = num
             ar_age.text = qualifier
 
-            if (model.selectedShelves.size == 1) {
+            if (model.shelvesSelection.size() == 1) {
                 ar_shelf_title.visibility = VISIBLE
-                ar_shelf_title.text = model.selectedShelves.first()
+                //ar_shelf_title.text = model.selectedShelves.first()
             } else {
                 ar_shelf_title.visibility = GONE
             }
@@ -117,11 +126,11 @@ class ARFragment : ScopedFragment() {
             })
 
             ar_first_placement_grid.setOnClickListener {
-                isHitPlane()?.let { firstPlacement(PLACEMENT.GRID, it, model) }
+                isHitPlane()?.let { firstPlacement(AllocationType.GridType, it, model) }
             }
 
             ar_first_placement_tower.setOnClickListener {
-                isHitPlane()?.let { firstPlacement(PLACEMENT.TOWER, it, model) }
+                isHitPlane()?.let { firstPlacement(AllocationType.TowersType, it, model) }
             }
 
             ar_placement.setOnClickListener {
@@ -131,15 +140,15 @@ class ARFragment : ScopedFragment() {
                         ar_shuffle.visibility = GONE
                         cleanupAll()
                         rootAnchor = it
-                        if (currentPlacement == PLACEMENT.GRID) {
-                            currentPlacement = PLACEMENT.TOWER
+                        if (currentAllocationType == AllocationType.GridType) {
+                            currentAllocationType = AllocationType.TowersType
                             ar_placement.setImageResource(R.drawable.grid)
                         } else {
-                            currentPlacement = PLACEMENT.GRID
+                            currentAllocationType = AllocationType.GridType
                             ar_placement.setImageResource(R.drawable.tower)
 
                         }
-                        model.moveBooksToAR(currentPlacement)
+                        model.allocateBooksInAR(currentAllocationType)
                     }
                 }
             }
@@ -170,7 +179,7 @@ class ARFragment : ScopedFragment() {
                 ar_shuffle.visibility = GONE
 
                 cleanupAll()
-                model.shuffle(currentPlacement)
+                model.shuffle(currentAllocationType)
             }
         }
     }
@@ -184,12 +193,12 @@ class ARFragment : ScopedFragment() {
     }
 
 
-    private fun firstPlacement(type: PLACEMENT, anchor: Anchor, model: BooksViewModel) {
-        currentPlacement = type
-        model.moveBooksToAR(currentPlacement)
+    private fun firstPlacement(type: AllocationType, anchor: Anchor, model: BooksViewModel) {
+        currentAllocationType = type
+        model.allocateBooksInAR(currentAllocationType)
         rootAnchor = anchor
         ar_first_placement.visibility = GONE
-        if (currentPlacement == PLACEMENT.GRID) {
+        if (currentAllocationType == AllocationType.GridType) {
             ar_placement.setImageResource(R.drawable.tower)
         } else {
             ar_placement.setImageResource(R.drawable.grid)
@@ -288,69 +297,51 @@ class ARFragment : ScopedFragment() {
             book.size.y / modelSize.y,
             book.size.z / modelSize.z
         )
-        bookNode.localRotation = book.rotation
-        bookNode.localPosition = book.position
+        bookNode.localRotation = book.rotation.toQuaternion()
+        bookNode.localPosition = book.position.toVector3()
         return bookNode
     }
 
 
     private suspend fun addCover(book: ARBook, bookNode: Node) {
-        val btm = downloadImage(context!!, book.coverUrl)
-        if (!isActive) {
-            throw CancellationException()
-        }
-
         val coverNode = Node()
-        coverNode.renderable = loadCoverRenderable(context!!, book.coverType)
-
+        coverNode.renderable = loadRenderableForCover(book.bookModel.cover)
         val parentBox = (bookNode.renderable as ModelRenderable).collisionShape as Box
-        val realXm = book.coverWidth / dpToPix(context!!, 250f)
-        val realYm = book.coverHeight / dpToPix(context!!, 250f)
+        val realXm = book.bookModel.cover.width / dpToPix(context!!, 250f)
+        val realYm = book.bookModel.cover.height / dpToPix(context!!, 250f)
 
         coverNode.localPosition = Vector3(0f, modelSize.y, 0.005f - modelSize.z / 2)
         coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
         coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
 
-        if (btm != null) {
-            val img = (coverNode.renderable as ViewRenderable).view as ImageView
-            img.setImageBitmap(btm)
-        } else {
-            val root = (coverNode.renderable as ViewRenderable).view as FrameLayout
+        when(book.bookModel.cover) {
+            is ImageCover -> {
+                val btm = downloadImage(context!!, book.bookModel.cover.url)
+                val img = (coverNode.renderable as ViewRenderable).view as ImageView
+                img.setImageBitmap(btm)
+            }
+            is TemplateCover -> {
+                val root = (coverNode.renderable as ViewRenderable).view as FrameLayout
 
-            root.findViewById<TextView>(R.id.title)?.text = book.title
-            root.findViewById<TextView>(R.id.title)?.setTextColor(book.textColor)
-            root.findViewById<TextView>(R.id.author1)?.setTextColor(book.textColor)
-            root.findViewById<TextView>(R.id.author2)?.setTextColor(book.textColor)
-            root.findViewById<View>(R.id.background).setBackgroundColor(book.coverColor)
-
-            when (book.authors.size) {
-                0 -> {
-                    root.findViewById<TextView>(R.id.author1)?.text = ""
-                    root.findViewById<TextView>(R.id.author2)?.text = ""
-                    root.findViewById<TextView>(R.id.author1)?.visibility = GONE
-                    root.findViewById<TextView>(R.id.author2)?.visibility = GONE
-                }
-                1 -> {
-                    root.findViewById<TextView>(R.id.author1)?.text = book.authors[0]
-                    root.findViewById<TextView>(R.id.author2)?.text = ""
-                    root.findViewById<TextView>(R.id.author1)?.visibility = VISIBLE
-                    root.findViewById<TextView>(R.id.author2)?.visibility = GONE
-                }
-                else -> {
-                    root.findViewById<TextView>(R.id.author1)?.text = book.authors[0]
-                    root.findViewById<TextView>(R.id.author2)?.text = book.authors[1]
-                    root.findViewById<TextView>(R.id.author1)?.visibility = VISIBLE
-                    root.findViewById<TextView>(R.id.author2)?.visibility = VISIBLE
-                }
+                root.findViewById<TextView>(R.id.author)?.text = book.bookModel.cover.author
+                root.findViewById<TextView>(R.id.title)?.text = book.bookModel.cover.title
+                root.findViewById<TextView>(R.id.title)?.setTextColor(book.bookModel.cover.textColor)
+                root.findViewById<TextView>(R.id.author)?.setTextColor(book.bookModel.cover.textColor)
+                root.findViewById<View>(R.id.background).setBackgroundColor(book.bookModel.cover.spineColor)
             }
         }
 
         coverNode.setParent(bookNode)
-        paintBook(bookNode, book.coverColor)
+        paintBook(bookNode, book.bookModel.cover.spineColor)
+    }
+
+    private suspend fun loadRenderableForCover(cover: Cover) = when (cover) {
+        is ImageCover -> ViewRenderable.builder().setView(context, R.layout.cover).build().await()
+        is TemplateCover -> ViewRenderable.builder().setView(context, R.layout.book_template).build().await()
     }
 
 
-    private fun paintBook(bookNode: Node, color: Int = makeRandomColor()) {
+    private fun paintBook(bookNode: Node, color: Int) {
         val backgroundColor = com.google.ar.sceneform.rendering.Color(color)
 
         val mat1 = bookNode.renderable!!.getMaterial(1)

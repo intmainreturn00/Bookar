@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks.fragments
+package com.intmainreturn00.arbooks.ui.fragments
 
 
 import android.os.Bundle
@@ -15,10 +15,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.AppBarLayout
 import com.intmainreturn00.arbooks.*
+import com.intmainreturn00.arbooks.platform.GlideApp
+import com.intmainreturn00.arbooks.ui.PodkovaFont
+import com.intmainreturn00.arbooks.ui.ShelvesAdapter
+import com.intmainreturn00.arbooks.viewmodels.BooksViewModel
 
 import kotlinx.android.synthetic.main.fragment_shelves.*
 
 class ShelvesFragment : Fragment() {
+    private lateinit var adapter: ShelvesAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,13 +32,11 @@ class ShelvesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_shelves, container, false)
     }
 
-    private val shelvesModels = mutableListOf<ShelfModel>()
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.run {
             val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
-            GlideApp.with(this).load(model.user.imageUrl).apply(RequestOptions().circleCrop()).into(avatar)
+            GlideApp.with(this).load(model.user.avatar).apply(RequestOptions().circleCrop()).into(avatar)
 
             books_num.text = model.numBooks.toString()
             books.text = resources.getQuantityString(R.plurals.books, model.numBooks)
@@ -46,45 +49,38 @@ class ShelvesFragment : Fragment() {
             PodkovaFont.EXTRA_BOLD.apply(books_num, books, pages_num, pages, age_num, age, no_books)
             PodkovaFont.REGULAR.apply(status, ar)
 
-            shelves.apply {
-                layoutManager = LinearLayoutManager(this@run, RecyclerView.VERTICAL, false)
-                adapter = ShelvesAdapter(this@run, shelvesModels) { on: Boolean, shelfName: String ->
-                    if (on) {
-                        model.selectedShelves.add(shelfName)
-                    } else {
-                        model.selectedShelves.remove(shelfName)
-                    }
-                    if (model.selectedShelves.size > 0) {
-                        ar.visibility = VISIBLE
-                        this@run.bottom.visibility = VISIBLE
-                    } else {
-                        ar.visibility = INVISIBLE
-                        this@run.bottom.visibility = INVISIBLE
-                    }
+            adapter = ShelvesAdapter(this, model.shelves) { shelfId: Int, on: Boolean ->
+                model.shelvesSelection.put(shelfId, on)
+                if (model.shelvesSelection.size() > 0) {
+                    this@run.bottom.visibility = VISIBLE
+                    ar.visibility = VISIBLE
+                } else {
+                    this@run.bottom.visibility = INVISIBLE
+                    ar.visibility = INVISIBLE
                 }
             }
 
+            shelves.layoutManager = LinearLayoutManager(this@run, RecyclerView.VERTICAL, false)
+            shelves.adapter = adapter
+            shelves.hasFixedSize()
+
+            // appbar fade when scroll..
             appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, offset ->
                 val percentage =
                     (appBarLayout.totalScrollRange - Math.abs(offset).toFloat() * 1.2f) / appBarLayout.totalScrollRange
                 header.alpha = percentage
             })
 
-            if (model.processingDone.value == false) {
-                // if previously NOT loaded...
-                model.loadCovers()
-
-                model.lastProcessedBook.observe(this, Observer {
-                    val index = model.shelfIndex
-                    if (index >= shelvesModels.size) {
-                        shelvesModels.add(ShelfModel(index, model.shelfTitle, mutableListOf()))
-                        (shelves.adapter as ShelvesAdapter).addShelf()
-                    }
-                    shelvesModels[index].books.add(0, it)
-                    (shelves.adapter as ShelvesAdapter).notifyBookAdded(index)
-                })
+            if (model.processingDone.value == true) {
+                // if previously loaded - set all books at once
+                adapter.setBooks(model.booksByShelf)
+                adapter.selectShelves(model.shelvesSelection)
             } else {
-                model.selectedShelves.addAll(model.shelves.map { it.name })
+                // if not - start processing books one by one
+                model.loadCovers()
+                model.processedBook.observe(this, Observer { (shelfId, book) ->
+                    adapter.addBook(shelfId, book)
+                })
             }
 
             model.numProcessed.observe(this, Observer {
@@ -94,18 +90,14 @@ class ShelvesFragment : Fragment() {
             model.processingDone.observe(this, Observer { done ->
                 if (done) {
                     progress.visibility = INVISIBLE
-                    if (model.selectedShelves.size > 0) {
+                    if (model.shelvesSelection.size() > 0) {
                         ar.visibility = VISIBLE
                         bottom.visibility = VISIBLE
                     } else {
                         no_books.visibility = VISIBLE
                         toolbar.visibility = INVISIBLE
                     }
-                    (shelves.adapter as ShelvesAdapter).lock = false
-                    (shelves.adapter as ShelvesAdapter).notifyItemRangeChanged(
-                        0,
-                        (shelves.adapter as ShelvesAdapter).itemCount
-                    )
+                    adapter.allowSelection = true
                     status.text = resources.getString(R.string.processing_complete)
                 }
             })

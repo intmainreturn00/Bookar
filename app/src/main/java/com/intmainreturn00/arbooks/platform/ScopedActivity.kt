@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks
+package com.intmainreturn00.arbooks.platform
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

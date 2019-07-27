@@ -1,9 +1,6 @@
-package com.intmainreturn00.arbooks.fragments;
+package com.intmainreturn00.arbooks.platform;
 
 import android.Manifest;
-import android.view.View;
-import android.view.WindowManager;
-import androidx.fragment.app.FragmentActivity;
 import com.google.ar.sceneform.ux.ArFragment;
 
 public class WritingArFragment extends ArFragment {

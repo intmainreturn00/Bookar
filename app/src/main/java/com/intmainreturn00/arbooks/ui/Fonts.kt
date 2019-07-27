@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks
+package com.intmainreturn00.arbooks.ui
 
 import android.graphics.Typeface
 import android.widget.TextView

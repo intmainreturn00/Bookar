@@ -1,8 +1,9 @@
-package com.intmainreturn00.arbooks
+package com.intmainreturn00.arbooks.platform
 
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.navigation.Navigation.findNavController
+import com.intmainreturn00.arbooks.R
 
 class MainActivity : ScopedAppActivity() {
 

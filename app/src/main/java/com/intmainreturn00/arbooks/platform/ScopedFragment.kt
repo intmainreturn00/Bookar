@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks
+package com.intmainreturn00.arbooks.platform
 
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CoroutineScope

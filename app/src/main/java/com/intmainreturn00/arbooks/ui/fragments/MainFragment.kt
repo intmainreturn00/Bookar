@@ -1,4 +1,4 @@
-package com.intmainreturn00.arbooks.fragments
+package com.intmainreturn00.arbooks.ui.fragments
 
 
 import android.os.Bundle
