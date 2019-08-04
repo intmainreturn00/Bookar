@@ -132,34 +132,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
-        android:id="@+id/ar_first_placement"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_marginBottom="23dp"
-        android:orientation="horizontal"
-        android:visibility="invisible">
-
-        <ImageButton
-            android:id="@+id/ar_first_placement_tower"
-            android:layout_width="47dp"
-            android:layout_height="47dp"
-            android:background="@drawable/ripple_rounded"
-            android:elevation="0dp"
-            android:src="@drawable/tower" />
-
-        <ImageButton
-            android:id="@+id/ar_first_placement_grid"
-            android:layout_width="47dp"
-            android:layout_height="47dp"
-            android:layout_marginStart="45dp"
-            android:background="@drawable/ripple_rounded"
-            android:elevation="0dp"
-            android:src="@drawable/grid" />
-
-    </LinearLayout>
-
 
     <LinearLayout
         android:id="@+id/ar_controls"
@@ -180,7 +152,7 @@
             android:src="@drawable/tower" />
 
         <ImageButton
-            android:id="@+id/ar_share"
+            android:id="@+id/capture"
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:layout_gravity="center_vertical"
@@ -197,7 +169,7 @@
             android:layout_gravity="center_vertical"
             android:background="@drawable/ripple_rounded"
             android:elevation="0dp"
-            android:src="@drawable/refresh" />
+            android:src="@drawable/grid" />
 
     </LinearLayout>
 

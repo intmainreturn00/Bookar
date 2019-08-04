@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.intmainreturn00.arbooks.*
 import com.intmainreturn00.arbooks.platform.ScopedFragment
@@ -46,16 +45,13 @@ class LoadingFragment : ScopedFragment() {
             }
         }
 
-        model.booksLoadingDone.observe(this, Observer { done ->
-                if (done) {
-                    findNavController().navigate(R.id.action_loading_to_shelves)
-                }
-            })
+        model.hasProfileCache.observe(this, Observer {cached ->
+            if (cached)
+                findNavController().navigate(R.id.action_loading_to_shelves)
+        })
 
     }
 
-
-    private fun prefetch() =
-        ViewModelProviders.of(activity!!).get(BooksViewModel::class.java).loadBooks()
+    private fun prefetch() = model.loadProfile()
 
 }

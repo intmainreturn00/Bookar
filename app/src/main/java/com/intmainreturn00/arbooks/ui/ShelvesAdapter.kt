@@ -34,14 +34,28 @@ class ShelvesAdapter(
         }
     }
 
-    fun addBook(shelfId: Int, book: Book) {
-        shelfAdapters.get(shelfId)?.addBook(book)
+
+    fun addBook(book: Book) {
+        book.shelves.forEach { shelf ->
+            shelfAdapters.get(shelf.id)?.addBook(book)
+        }
     }
 
-    fun setBooks(booksByShelf: SparseArray<MutableList<Book>>) {
+    fun setBooks(books: List<Book>) {
+        val booksByShelf = SparseArray<MutableList<Book>>()
+        shelves.forEach { booksByShelf.put(it.id, mutableListOf()) }
+        books.forEach { book ->
+            book.shelves.forEach { shelf ->
+                booksByShelf[shelf.id].add(book)
+            }
+        }
         booksByShelf.forEach { shelfId, books ->
             shelfAdapters.get(shelfId)?.setBooks(books)
         }
+    }
+
+    fun clearBooks() {
+        shelves.forEach { shelfAdapters.get(it.id)?.clearBooks() }
     }
 
     var allowSelection = false

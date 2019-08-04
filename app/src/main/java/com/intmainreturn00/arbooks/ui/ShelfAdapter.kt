@@ -54,6 +54,11 @@ class ShelfAdapter(val context: Context) :
         notifyItemInserted(books.size - 1)
     }
 
+    fun clearBooks() {
+        this.books.clear()
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = when (viewType) {
         Cover.TypeImage -> CoverViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.book, parent, false)
@@ -73,14 +78,14 @@ class ShelfAdapter(val context: Context) :
             }
             is TemplateCover -> {
                 val templateHolder = holder as TemplateViewHolder
-                templateHolder.title.text = book.cover.title
+                templateHolder.title.text = book.title
                 templateHolder.title.setCustomFont(PodkovaFont.EXTRA_BOLD)
                 templateHolder.author.setCustomFont(PodkovaFont.REGULAR)
 
                 templateHolder.background.setBackgroundColor(book.cover.spineColor)
                 templateHolder.title.setTextColor(book.cover.textColor)
                 templateHolder.author.setTextColor(book.cover.textColor)
-                templateHolder.author.text = book.cover.author
+                templateHolder.author.text = book.author
                 templateHolder.gray(!selected, book.cover)
             }
         }

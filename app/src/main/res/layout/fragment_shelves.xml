@@ -72,8 +72,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"
-                        android:text="205"
+                        android:text="-"
                         android:textColor="#2f2937"
+                        android:visibility="invisible"
                         android:textSize="18sp" />
 
                     <TextView
@@ -82,6 +83,7 @@
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"
                         android:text="books"
+                        android:visibility="invisible"
                         android:textColor="#b95463"
                         android:textSize="12sp" />
 
@@ -103,7 +105,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"
-                        android:text="205"
+                        android:text="-"
+                        android:visibility="invisible"
                         android:textColor="#2f2937"
                         android:textSize="18sp" />
 
@@ -113,6 +116,7 @@
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"
                         android:text="pages"
+                        android:visibility="invisible"
                         android:textColor="#b95463"
                         android:textSize="12sp" />
 
@@ -134,7 +138,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"
-                        android:text="8"
+                        android:text="-"
+                        android:visibility="invisible"
                         android:textColor="#2f2937"
                         android:textSize="18sp" />
 
@@ -144,10 +149,24 @@
                         android:layout_height="wrap_content"
                         android:includeFontPadding="false"
                         android:text="years"
+                        android:visibility="invisible"
                         android:textColor="#b95463"
                         android:textSize="12sp" />
 
                 </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/refresh"
+                    android:layout_width="47dp"
+                    android:layout_height="47dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/avatar_layout"
+                    app:layout_constraintBottom_toBottomOf="@id/avatar_layout"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/ripple_rounded"
+                    android:elevation="0dp"
+                    android:visibility="invisible"
+                    android:src="@drawable/refresh_1" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -161,6 +180,7 @@
 
             <TextView
                 android:id="@+id/status"
+                android:visibility="invisible"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

@@ -17,8 +17,8 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
 import com.google.ar.sceneform.AnchorNode
@@ -30,15 +30,14 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.arbooks.*
+import com.intmainreturn00.arbooks.data.network.downloadImage
 import com.intmainreturn00.arbooks.domain.*
 import com.intmainreturn00.arbooks.platform.ScopedFragment
-import com.intmainreturn00.arbooks.ui.PodkovaFont
-import com.intmainreturn00.arbooks.ui.VideoRecorder
-import com.intmainreturn00.arbooks.ui.dpToPix
-import com.intmainreturn00.arbooks.ui.takePhoto
+import com.intmainreturn00.arbooks.ui.*
 import com.intmainreturn00.arbooks.viewmodels.BooksViewModel
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_ar.*
+import kotlinx.android.synthetic.main.fragment_ar.header
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.isActive
@@ -46,10 +45,11 @@ import kotlinx.coroutines.launch
 
 // Interface Adapters
 fun MyVector3.toVector3() = Vector3(x, y, z)
+
 fun MyQuaternion.toQuaternion() = Quaternion.axisAngle(Vector3(x, y, z), w)
 
 class ARFragment : ScopedFragment() {
-
+    private val model by activityViewModels<BooksViewModel>()
     private lateinit var fragment: ArFragment
     private lateinit var bookModel: ModelRenderable
     private val modelSize = Vector3(0.14903799f, 0.038000144f, 0.2450379f)
@@ -58,6 +58,7 @@ class ARFragment : ScopedFragment() {
     private var rootAnchor: Anchor? = null
     private var currentAllocationType: AllocationType = AllocationType.GridType
     private var videoRecorder = VideoRecorder()
+    private var firstPlacement = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_ar, container, false)
@@ -70,119 +71,98 @@ class ARFragment : ScopedFragment() {
             fragment.onUpdate(frameTime)
         }
 
-        activity?.run {
-            val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
-            PodkovaFont.EXTRA_BOLD.apply(
-                ar_books_num,
-                ar_books,
-                ar_pages_num,
-                ar_pages,
-                ar_age_num,
-                ar_age,
-                ar_shelf_title
-            )
+        PodkovaFont.EXTRA_BOLD.apply(
+            ar_books_num, ar_books,
+            ar_pages_num, ar_pages,
+            ar_age_num, ar_age,
+            ar_shelf_title
+        )
 
-            ar_books_num.text = model.numBooks.toString()
-            ar_books.text = resources.getQuantityString(R.plurals.books, model.numBooks)
-            ar_pages_num.text = model.numPages.toString()
-            ar_pages.text = resources.getQuantityString(R.plurals.pages, model.numPages)
-            val (num, qualifier) = formatProfileAge(model.user.joined)
-            ar_age_num.text = num
-            ar_age.text = qualifier
+        model.user.observe(this, Observer { updateStatistics(it) })
 
-            if (model.shelvesSelection.size() == 1) {
-                ar_shelf_title.visibility = VISIBLE
-                //ar_shelf_title.text = model.selectedShelves.first()
-            } else {
-                ar_shelf_title.visibility = GONE
-            }
-
-            ar_first_placement.visibility = VISIBLE
-            ar_controls.visibility = GONE
-
-            hideSystemUI()
-            header.viewTreeObserver.addOnWindowFocusChangeListener { hasFocus ->
-                if (hasFocus)
-                    hideSystemUI()
-            }
-
-
-            videoRecorder.setSceneView(fragment.arSceneView)
-            videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_1080P, ORIENTATION_PORTRAIT)
+        val title = model.isExactlyOneShelfSelected()
+        if (title != null) {
+            ar_shelf_title.text = title
+            ar_shelf_title.visibility = VISIBLE
+        } else {
+            ar_shelf_title.visibility = GONE
         }
 
-    }
+        hideSystemUI()
+        header.viewTreeObserver.addOnWindowFocusChangeListener { hasFocus ->
+            if (hasFocus)
+                hideSystemUI()
+        }
 
-    override fun onResume() {
-        super.onResume()
+        videoRecorder.setSceneView(fragment.arSceneView)
+        videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_1080P, ORIENTATION_PORTRAIT)
 
-        activity?.run {
-            val model = ViewModelProviders.of(this).get(BooksViewModel::class.java)
-
-            model.arbooks.observe(this, Observer { arbooks ->
-                rootAnchor?.let { anchor ->
-                    launch { placeBooks(anchor, arbooks) }
-                }
-            })
-
-            ar_first_placement_grid.setOnClickListener {
-                isHitPlane()?.let { firstPlacement(AllocationType.GridType, it, model) }
-            }
-
-            ar_first_placement_tower.setOnClickListener {
-                isHitPlane()?.let { firstPlacement(AllocationType.TowersType, it, model) }
-            }
-
-            ar_placement.setOnClickListener {
-                isHitPlane()?.let {
-                    launch {
-                        ar_placement.visibility = GONE
-                        ar_shuffle.visibility = GONE
-                        cleanupAll()
-                        rootAnchor = it
-                        if (currentAllocationType == AllocationType.GridType) {
-                            currentAllocationType = AllocationType.TowersType
-                            ar_placement.setImageResource(R.drawable.grid)
-                        } else {
-                            currentAllocationType = AllocationType.GridType
-                            ar_placement.setImageResource(R.drawable.tower)
-
-                        }
-                        model.allocateBooksInAR(currentAllocationType)
-                    }
-                }
-            }
-
-            ar_share.setOnClickListener {
-                if (videoRecorder.isRecording) {
-                    it.background = getDrawable(R.drawable.camera)
-                    toggleRecording()
-                    val t = Toasty.normal(this, "Video saved to AR_Books/")
-                    t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
-                    t.show()
-                } else {
-                    takePhoto(this, fragment, header)
-                    val t = Toasty.normal(this, "Image saved to AR_Books/")
-                    t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
-                    t.show()
-                }
-            }
-
-            ar_share.setOnLongClickListener {
-                it.background = getDrawable(R.drawable.hold)
-                toggleRecording()
-                true
-            }
-
-            ar_shuffle.setOnClickListener {
+        // first time - shuffle button == grid
+        ar_shuffle.setOnClickListener {
+            isHitPlane()?.let {
                 ar_placement.visibility = GONE
                 ar_shuffle.visibility = GONE
-
                 cleanupAll()
-                model.shuffle(currentAllocationType)
+                rootAnchor = it
+                if (firstPlacement) {
+                    model.allocateBooksInAR(AllocationType.GridType)
+                    ar_shuffle.setImageResource(R.drawable.refresh)
+                } else {
+                    model.shuffle(currentAllocationType)
+                }
+                firstPlacement = false
             }
         }
+
+        ar_placement.setOnClickListener {
+            isHitPlane()?.let {
+                launch {
+                    ar_placement.visibility = GONE
+                    ar_shuffle.visibility = GONE
+                    cleanupAll()
+                    rootAnchor = it
+                    if (currentAllocationType == AllocationType.GridType) {
+                        currentAllocationType = AllocationType.TowersType
+                        ar_placement.setImageResource(R.drawable.grid)
+                    } else {
+                        currentAllocationType = AllocationType.GridType
+                        ar_placement.setImageResource(R.drawable.tower)
+
+                    }
+                    model.allocateBooksInAR(currentAllocationType)
+                }
+            }
+        }
+
+        model.arbooks.observe(this, Observer { arbooks ->
+            rootAnchor?.let { anchor ->
+                launch { placeBooks(anchor, arbooks) }
+            }
+        })
+
+        capture.setOnClickListener {
+            if (videoRecorder.isRecording) {
+                it.background = activity!!.getDrawable(R.drawable.camera)
+                toggleRecording()
+                val t = Toasty.normal(activity!!, "Video saved to AR_Books/")
+                t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
+                t.show()
+            } else {
+                takePhoto(activity!!, fragment, header)
+                val t = Toasty.normal(activity!!, "Image saved to AR_Books/")
+                t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
+                t.show()
+            }
+        }
+
+        capture.setOnLongClickListener {
+            it.background = activity!!.getDrawable(R.drawable.hold)
+            toggleRecording()
+            true
+        }
+
     }
+
 
     override fun onPause() {
         super.onPause()
@@ -190,19 +170,6 @@ class ARFragment : ScopedFragment() {
             toggleRecording()
         }
         job.cancel()
-    }
-
-
-    private fun firstPlacement(type: AllocationType, anchor: Anchor, model: BooksViewModel) {
-        currentAllocationType = type
-        model.allocateBooksInAR(currentAllocationType)
-        rootAnchor = anchor
-        ar_first_placement.visibility = GONE
-        if (currentAllocationType == AllocationType.GridType) {
-            ar_placement.setImageResource(R.drawable.tower)
-        } else {
-            ar_placement.setImageResource(R.drawable.grid)
-        }
     }
 
 
@@ -314,7 +281,7 @@ class ARFragment : ScopedFragment() {
         coverNode.localScale = Vector3(0.87f * parentBox.size.x / realXm, 0.87f * parentBox.size.z / realYm, 1f)
         coverNode.localRotation = Quaternion.axisAngle(Vector3(1.0f, 0.0f, 0.0f), 90f)
 
-        when(book.bookModel.cover) {
+        when (book.bookModel.cover) {
             is ImageCover -> {
                 val btm = downloadImage(context!!, book.bookModel.cover.url)
                 val img = (coverNode.renderable as ViewRenderable).view as ImageView
@@ -323,8 +290,8 @@ class ARFragment : ScopedFragment() {
             is TemplateCover -> {
                 val root = (coverNode.renderable as ViewRenderable).view as FrameLayout
 
-                root.findViewById<TextView>(R.id.author)?.text = book.bookModel.cover.author
-                root.findViewById<TextView>(R.id.title)?.text = book.bookModel.cover.title
+                root.findViewById<TextView>(R.id.author)?.text = book.bookModel.author
+                root.findViewById<TextView>(R.id.title)?.text = book.bookModel.title
                 root.findViewById<TextView>(R.id.title)?.setTextColor(book.bookModel.cover.textColor)
                 root.findViewById<TextView>(R.id.author)?.setTextColor(book.bookModel.cover.textColor)
                 root.findViewById<View>(R.id.background).setBackgroundColor(book.bookModel.cover.spineColor)
@@ -363,10 +330,36 @@ class ARFragment : ScopedFragment() {
         }
     }
 
-
     private fun getScreenCenter(): Point {
         val screen = activity!!.findViewById<View>(android.R.id.content)
         return Point(screen.width / 2, screen.height / 2)
+    }
+
+    private fun updateStatistics(user: User) {
+        if (user.numBooks != null && user.numPages != null) {
+            ar_books_num.text = user.numBooks.toString()
+            ar_books.text = resources.getQuantityString(R.plurals.books, user.numBooks)
+            ar_books_num.visibility = VISIBLE
+            ar_books.visibility = VISIBLE
+
+            ar_pages_num.text = user.numPages.toString()
+            ar_pages.text = resources.getQuantityString(R.plurals.pages, user.numPages)
+            ar_pages_num.visibility = VISIBLE
+            ar_pages.visibility = VISIBLE
+
+            ar_age_num.visibility = VISIBLE
+            ar_age.visibility = VISIBLE
+            val (num, qualifier) = formatProfileAge(user.joined)
+            ar_age_num.text = num
+            ar_age.text = qualifier
+        } else {
+            ar_books_num.visibility = View.INVISIBLE
+            ar_books.visibility = View.INVISIBLE
+            ar_pages_num.visibility = View.INVISIBLE
+            ar_pages.visibility = View.INVISIBLE
+            ar_age_num.visibility = View.INVISIBLE
+            ar_age.visibility = View.INVISIBLE
+        }
     }
 
 

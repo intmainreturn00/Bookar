@@ -1,23 +1,41 @@
 package com.intmainreturn00.arbooks.domain
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "user_table")
 data class User(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val name: String,
     val username: String,
     val avatar: String,
-    val joined: String
+    val joined: String,
+    val numPages: Int? = null,
+    val numBooks: Int? = null
 ) {
     override fun hashCode(): Int = id
 }
 
-data class Shelf(val id: Int, val name: String)
+@Entity(tableName = "stat_table")
+data class Stat(
+    @PrimaryKey(autoGenerate = true) val id: Int,
+    val numBooks: Int?,
+    val numPages: Int?,
+    val joined: String
+)
 
+@Entity(tableName = "shelf_table")
+data class Shelf(@PrimaryKey val id: Int, val name: String)
+
+@Entity(tableName = "book_table")
 data class Book(
-    val id: Int,
+    @PrimaryKey val id: Int,
+    val title: String,
+    val author: String,
     val pages: Int?,
     val rating: Int?,
     val readCount: Int?,
+    val shelves: List<Shelf>,
     val cover: Cover
 ) {
     override fun hashCode(): Int = id
@@ -49,9 +67,7 @@ data class TemplateCover(
     override val width: Int,
     override val height: Int,
     override val spineColor: Int,
-    val textColor: Int,
-    val title: String,
-    val author: String
+    val textColor: Int
 ) : Cover()
 
 // ARBook - allocate-ed Book =)

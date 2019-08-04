@@ -22,6 +22,12 @@
             app:launchSingleTop="false"
             app:popUpTo="@+id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_main_to_shelves"
+            app:destination="@id/shelvesFragment"
+            app:launchSingleTop="false"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

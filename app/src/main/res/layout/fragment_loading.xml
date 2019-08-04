@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark"
-    tools:context=".platform.MainActivity">
+    tools:context=".ui.MainActivity">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/center_horizontal"
@@ -95,7 +95,7 @@
         android:layout_marginEnd="22dp"
         android:gravity="center_horizontal"
         android:lineSpacingExtra="8sp"
-        android:text="@string/loading"
+        android:text="@string/loading_profile"
         android:textColor="@color/white_text"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"

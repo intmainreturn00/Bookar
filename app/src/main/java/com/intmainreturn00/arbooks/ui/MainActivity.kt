@@ -1,13 +1,15 @@
-package com.intmainreturn00.arbooks.platform
+package com.intmainreturn00.arbooks.ui
 
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.navigation.Navigation.findNavController
 import com.intmainreturn00.arbooks.R
+import com.intmainreturn00.arbooks.platform.ScopedAppActivity
 
 class MainActivity : ScopedAppActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
 
         window.setFlags(
