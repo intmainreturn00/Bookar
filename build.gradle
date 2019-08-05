@@ -5,6 +5,9 @@ buildscript {
     ext.anko_version='0.10.8'
     repositories {
         google()
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
         jcenter()
         
     }
@@ -14,7 +17,9 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
         classpath 'com.google.ar.sceneform:plugin:1.8.0'
-        classpath 'com.google.gms:google-services:4.2.0'
+        classpath 'com.google.gms:google-services:4.3.0'
+        classpath 'io.fabric.tools:gradle:1.31.0'
+
     }
 }
 
@@ -23,6 +28,7 @@ allprojects {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
+
 
     }
 }
