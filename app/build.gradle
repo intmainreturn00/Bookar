@@ -14,7 +14,7 @@ android {
         targetCompatibility 1.8
     }
     defaultConfig {
-        applicationId "com.intmainreturn00.arbooks"
+        applicationId "com.intmainreturn00.bookar"
         minSdkVersion 24
         targetSdkVersion 28
         versionCode 1

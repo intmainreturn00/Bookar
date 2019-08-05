@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.intmainreturn00.arbooks.ui.fragments.MainFragment"
+        android:name="com.intmainreturn00.bookar.ui.fragments.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main">
         <action
@@ -32,12 +32,12 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.intmainreturn00.arbooks.ui.fragments.LoginFragment"
+        android:name="com.intmainreturn00.bookar.ui.fragments.LoginFragment"
         android:label="LoginFragment"
         tools:layout="@layout/fragment_login" />
     <fragment
         android:id="@+id/loadingFragment"
-        android:name="com.intmainreturn00.arbooks.ui.fragments.LoadingFragment"
+        android:name="com.intmainreturn00.bookar.ui.fragments.LoadingFragment"
         android:label="fragment_loading"
         tools:layout="@layout/fragment_loading">
         <deepLink
@@ -52,7 +52,7 @@
     </fragment>
     <fragment
         android:id="@+id/shelvesFragment"
-        android:name="com.intmainreturn00.arbooks.ui.fragments.ShelvesFragment"
+        android:name="com.intmainreturn00.bookar.ui.fragments.ShelvesFragment"
         android:label="fragment_shelves"
         tools:layout="@layout/fragment_shelves" >
         <action
@@ -62,7 +62,7 @@
     </fragment>
     <fragment
         android:id="@+id/ARFragment"
-        android:name="com.intmainreturn00.arbooks.ui.fragments.ARFragment"
+        android:name="com.intmainreturn00.bookar.ui.fragments.ARFragment"
         android:label="fragment_ar"
         tools:layout="@layout/fragment_ar" />
 
