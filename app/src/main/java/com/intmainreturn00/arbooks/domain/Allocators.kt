@@ -1,5 +1,7 @@
 package com.intmainreturn00.arbooks.domain
 
+import kotlin.math.max
+
 
 const val paperbackWidth = 0.1524f // 6''
 const val paperbackHeight = 0.2286f // 9''
@@ -25,7 +27,7 @@ sealed class Allocator {
         paperbackHeight + (-10..10).random() / 1000f
     )
 
-    protected  fun makeAngle(baseRotation: Float = 0f) =
+    protected fun makeAngle(baseRotation: Float = 0f) =
         MyQuaternion(0.0f, 1.0f, 0.0f, baseRotation + (-7..+7).random())
 }
 
@@ -63,7 +65,12 @@ private object Grid : Allocator() {
 
             elevationMap[i] += res[res.size - 1].size.y
 
-            if (i == 15) {
+            if (elevationMap[i] > 1.6f) {
+                claimNLastTop(res, gridOffsets.size)
+                return res
+            }
+
+            if (i == gridOffsets.size - 1) {
                 zLayer++
                 i = 0
             } else {
@@ -72,15 +79,22 @@ private object Grid : Allocator() {
 
         }
 
+        claimNLastTop(res, gridOffsets.size)
         return res
     }
+
+    private fun claimNLastTop(arbooks: List<ARBook>, n: Int) {
+        for (i in (max(arbooks.size - n, 0)) until arbooks.size)
+            arbooks[i].isTopBook = true
+    }
+
 }
 
 
 object Towers : Allocator() {
 
     private val towerOffsets = listOf(
-        Pair(0f, 0f), Pair(-1f, -0.5f), Pair(1f, -0.5f), Pair(-1f, +0.4f), Pair(+1f, +0.6f), Pair(0f, +1.2f)
+        Pair(-0.7f, -0.7f), Pair(0.7f, -0.7f), Pair(-0.7f, 0.7f), Pair(0f, 0f), Pair(0.7f, 0.7f)
     )
 
     override fun allocate(books: List<Book>): List<ARBook> {
@@ -107,10 +121,14 @@ object Towers : Allocator() {
 
             elevationMap[towerNum] += res[res.size - 1].size.y
 
-            when {
-                towerNum != towerOffsets.size - 1 && elevationMap[towerNum] > 1.7f - towerNum * 0.2f -> towerNum++
-                towerNum == towerOffsets.size - 1 && elevationMap[towerNum] > 1.7f - towerNum * 0.2f -> return res
+            if (elevationMap[towerNum] > 1.5f - towerNum * 0.1f) {
+                ++towerNum
+                res[res.size - 1].isTopBook = true
             }
+
+            if (towerNum == towerOffsets.size)
+                return res
+
 
         }
 

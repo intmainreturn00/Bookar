@@ -2,6 +2,7 @@ package com.intmainreturn00.arbooks.ui.fragments
 
 
 import android.content.ContentValues
+import android.content.Context
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Point
 import android.media.CamcorderProfile
@@ -45,8 +46,14 @@ import kotlinx.coroutines.launch
 
 // Interface Adapters
 fun MyVector3.toVector3() = Vector3(x, y, z)
-
 fun MyQuaternion.toQuaternion() = Quaternion.axisAngle(Vector3(x, y, z), w)
+
+// styled toast
+fun Context.makeToast(s: String) {
+    val t = Toasty.normal(this, s)
+    t.setGravity(Gravity.BOTTOM, 0, dpToPix(this, 80f).toInt())
+    t.show()
+}
 
 class ARFragment : ScopedFragment() {
     private val model by activityViewModels<BooksViewModel>()
@@ -144,14 +151,10 @@ class ARFragment : ScopedFragment() {
             if (videoRecorder.isRecording) {
                 it.background = activity!!.getDrawable(R.drawable.camera)
                 toggleRecording()
-                val t = Toasty.normal(activity!!, "Video saved to AR_Books/")
-                t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
-                t.show()
+                activity?.makeToast("Video saved to AR_Books/")
             } else {
                 takePhoto(activity!!, fragment, header)
-                val t = Toasty.normal(activity!!, "Image saved to AR_Books/")
-                t.setGravity(Gravity.BOTTOM, 0, dpToPix(activity!!, 80f).toInt())
-                t.show()
+                activity?.makeToast("Image saved to AR_Books/")
             }
         }
 
@@ -178,9 +181,7 @@ class ARFragment : ScopedFragment() {
         if (!recording) {
             val path = videoRecorder.videoPath.absolutePath
             activity?.let {
-                val t = Toasty.normal(it, "Video saved to AR_Books/")
-                t.setGravity(Gravity.BOTTOM, 0, dpToPix(it, 80f).toInt())
-                t.show()
+                it.makeToast("Video saved to AR_Books/")
                 val values = ContentValues()
                 values.put(MediaStore.Video.Media.TITLE, "BOOKAR Video")
                 values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
@@ -192,9 +193,11 @@ class ARFragment : ScopedFragment() {
 
 
     private suspend fun loadResources() {
-        bookModel = ModelRenderable.builder()
-            .setSource(fragment.context, Uri.parse("book1.sfb"))
-            .build().await()
+        if (!this::bookModel.isInitialized) {
+            bookModel = ModelRenderable.builder()
+                .setSource(fragment.context, Uri.parse("book1.sfb"))
+                .build().await()
+        }
     }
 
 
@@ -232,12 +235,14 @@ class ARFragment : ScopedFragment() {
             val bookNode = makeBookNode(bookModel.makeCopy(), book)
             nodes.add(bookNode)
             addCover(book, bookNode)
-            layer[counter / 16].add(bookNode)
+            if (!book.isTopBook) {
+                layer[counter / 16].add(bookNode)
+                counter++
+            }
             bookNode.setParent(anchorNode)
-            counter++
 
             if (counter == 16 * 2 - 1) {
-                // clean up overlapped 0 layer
+                // clean up overlapped 0 layer to gain performance
                 for (node in layer[0]) {
                     if (node.children.size > 0) {
                         node.removeChild(node.children[0])
@@ -249,7 +254,6 @@ class ARFragment : ScopedFragment() {
             }
         }
 
-        ar_controls.visibility = VISIBLE
         ar_placement.visibility = VISIBLE
         ar_shuffle.visibility = VISIBLE
     }

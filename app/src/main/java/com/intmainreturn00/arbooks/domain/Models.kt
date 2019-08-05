@@ -75,7 +75,8 @@ data class ARBook(
     val size: MyVector3,
     val position: MyVector3,
     val rotation: MyQuaternion,
-    val bookModel: Book
+    val bookModel: Book,
+    var isTopBook: Boolean = false
 )
 
 data class MyQuaternion(val x: Float, val y: Float, val z: Float, val w: Float)
