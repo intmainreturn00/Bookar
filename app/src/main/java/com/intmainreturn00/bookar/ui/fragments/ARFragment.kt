@@ -126,6 +126,10 @@ class ARFragment : ScopedFragment() {
                 launch {
                     ar_placement.visibility = GONE
                     ar_shuffle.visibility = GONE
+                    if (firstPlacement) {
+                        ar_shuffle.setImageResource(R.drawable.refresh)
+                        firstPlacement = false
+                    }
                     cleanupAll()
                     rootAnchor = it
                     if (currentAllocationType == AllocationType.GridType) {
