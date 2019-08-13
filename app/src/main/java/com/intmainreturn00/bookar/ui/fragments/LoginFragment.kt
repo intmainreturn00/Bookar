@@ -33,6 +33,7 @@ class LoginFragment : ScopedFragment() {
 
         login.setOnClickListener {
             launch {
+                // move to vm
                 grapi.loginStart()
                 activity?.browse(grapi.getAuthorizationUrl())
             }

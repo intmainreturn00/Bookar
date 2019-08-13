@@ -80,7 +80,7 @@ class BooksRepository private constructor(
 
             val books = mutableListOf<Book>()
             allReviews.forEachIndexed { index, review ->
-                val book = BookFactory.createFromReview(review, context)
+                val book = BookFactory.createFromReview(review, ResourceProvider.getInstance(context), context)
                 books.add(book)
                 _status.postValue(RepoStatus.ProcessingBooks(index + 1, numBooks, book))
             }
