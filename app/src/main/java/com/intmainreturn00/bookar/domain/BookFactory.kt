@@ -1,7 +1,6 @@
 package com.intmainreturn00.bookar.domain
 
-import android.content.Context
-import com.intmainreturn00.bookar.data.network.downloadImage
+import com.intmainreturn00.bookar.data.network.BitmapLoader
 import com.intmainreturn00.grapi.Author
 import com.intmainreturn00.grapi.Review
 import org.michaelevans.colorart.library.ColorArt
@@ -9,14 +8,18 @@ import org.michaelevans.colorart.library.ColorArt
 interface BookFactory {
     companion object {
 
-        suspend fun createFromReview(review: Review, resourceProvider: ResourceProvider, ctx: Context): Book {
+        suspend fun createFromReview(
+            review: Review,
+            resourceProvider: ResourceProvider,
+            bitmapLoader: BitmapLoader
+        ): Book {
             val url = when {
                 !review.book.imageUrl.contains("nophoto") -> review.book.imageUrl
                 review.book.isbn.isNotEmpty() -> makeOpenlibLink(review.book.isbn)
                 else -> ""
             }
 
-            downloadImage(ctx, url).let {
+            bitmapLoader.downloadImage(url).let {
                 return if (it != null) {
                     val spineColor = ColorArt(it).backgroundColor
                     val c = ImageCover(it.width, it.height, spineColor, url)

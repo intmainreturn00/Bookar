@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.intmainreturn00.bookar.data.db.BooksDao
 import com.intmainreturn00.bookar.data.db.BooksRoomDatabase
+import com.intmainreturn00.bookar.data.network.BitmapLoader
 import com.intmainreturn00.bookar.domain.*
 import com.intmainreturn00.grapi.grapi
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +81,11 @@ class BooksRepository private constructor(
 
             val books = mutableListOf<Book>()
             allReviews.forEachIndexed { index, review ->
-                val book = BookFactory.createFromReview(review, ResourceProvider.getInstance(context), context)
+                val book = BookFactory.createFromReview(
+                    review,
+                    ResourceProvider.getInstance(context),
+                    BitmapLoader.getInstance(context)
+                )
                 books.add(book)
                 _status.postValue(RepoStatus.ProcessingBooks(index + 1, numBooks, book))
             }

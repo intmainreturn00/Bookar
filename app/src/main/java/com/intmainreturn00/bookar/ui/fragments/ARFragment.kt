@@ -31,7 +31,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.intmainreturn00.bookar.*
-import com.intmainreturn00.bookar.data.network.downloadImage
+import com.intmainreturn00.bookar.data.network.BitmapLoader
 import com.intmainreturn00.bookar.domain.*
 import com.intmainreturn00.bookar.platform.ScopedFragment
 import com.intmainreturn00.bookar.ui.*
@@ -66,6 +66,7 @@ class ARFragment : ScopedFragment() {
     private var currentAllocationType: AllocationType = AllocationType.GridType
     private var videoRecorder = VideoRecorder()
     private var firstPlacement = true
+    private lateinit var bitmapLoader: BitmapLoader
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_ar, container, false)
@@ -77,6 +78,8 @@ class ARFragment : ScopedFragment() {
         fragment.arSceneView.scene.addOnUpdateListener { frameTime ->
             fragment.onUpdate(frameTime)
         }
+
+        bitmapLoader = BitmapLoader.getInstance(context!!)
 
         PodkovaFont.EXTRA_BOLD.apply(
             ar_books_num, ar_books,
@@ -291,7 +294,7 @@ class ARFragment : ScopedFragment() {
 
         when (book.bookModel.cover) {
             is ImageCover -> {
-                val btm = downloadImage(context!!, book.bookModel.cover.url)
+                val btm = bitmapLoader.downloadImage(book.bookModel.cover.url)
                 val img = (coverNode.renderable as ViewRenderable).view as ImageView
                 img.setImageBitmap(btm)
             }
