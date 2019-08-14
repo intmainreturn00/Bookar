@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui
+package com.intmainreturn00.bookar.presentation.adapters
 
 import android.content.Context
 import android.util.SparseArray
@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.intmainreturn00.bookar.R
 import com.intmainreturn00.bookar.domain.Book
 import com.intmainreturn00.bookar.domain.Shelf
+import com.intmainreturn00.bookar.presentation.PodkovaFont
+import com.intmainreturn00.bookar.presentation.setCustomFont
 import kotlinx.android.synthetic.main.shelf.view.*
 
 

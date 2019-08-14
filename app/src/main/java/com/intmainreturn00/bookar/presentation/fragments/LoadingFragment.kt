@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui.fragments
+package com.intmainreturn00.bookar.presentation.fragments
 
 
 import android.os.Bundle
@@ -10,9 +10,9 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.intmainreturn00.bookar.*
 import com.intmainreturn00.bookar.platform.ScopedFragment
-import com.intmainreturn00.bookar.ui.PodkovaFont
-import com.intmainreturn00.bookar.ui.setCustomFont
-import com.intmainreturn00.bookar.viewmodels.BooksViewModel
+import com.intmainreturn00.bookar.presentation.PodkovaFont
+import com.intmainreturn00.bookar.presentation.setCustomFont
+import com.intmainreturn00.bookar.presentation.viewmodels.BooksViewModel
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.fragment_loading.*
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui.fragments
+package com.intmainreturn00.bookar.presentation.fragments
 
 
 import android.os.Bundle
@@ -19,11 +19,11 @@ import com.intmainreturn00.bookar.data.RepoStatus
 import com.intmainreturn00.bookar.domain.Book
 import com.intmainreturn00.bookar.domain.User
 import com.intmainreturn00.bookar.platform.GlideApp
-import com.intmainreturn00.bookar.ui.PodkovaFont
-import com.intmainreturn00.bookar.ui.ShelvesAdapter
-import com.intmainreturn00.bookar.ui.formatProfileAge
-import com.intmainreturn00.bookar.viewmodels.BooksViewModel
-import com.intmainreturn00.bookar.viewmodels.observeOnce
+import com.intmainreturn00.bookar.presentation.PodkovaFont
+import com.intmainreturn00.bookar.presentation.adapters.ShelvesAdapter
+import com.intmainreturn00.bookar.presentation.formatProfileAge
+import com.intmainreturn00.bookar.presentation.viewmodels.BooksViewModel
+import com.intmainreturn00.bookar.presentation.viewmodels.observeOnce
 
 import kotlinx.android.synthetic.main.fragment_shelves.*
 
@@ -105,7 +105,10 @@ class ShelvesFragment : Fragment() {
 
         model.shelves.observe(this, Observer {
             println("@ shelves ${it.size}")
-            adapter = ShelvesAdapter(activity!!, it) { shelfId: Int, on: Boolean ->
+            adapter = ShelvesAdapter(
+                activity!!,
+                it
+            ) { shelfId: Int, on: Boolean ->
                 model.selectShelf(shelfId, on)
                 allowAR(model.isSomethingSelected())
             }

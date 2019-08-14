@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui
+package com.intmainreturn00.bookar.presentation.adapters
 
 import android.content.Context
 import android.graphics.ColorMatrix
@@ -15,6 +15,8 @@ import com.intmainreturn00.bookar.domain.Cover
 import com.intmainreturn00.bookar.domain.ImageCover
 import com.intmainreturn00.bookar.domain.TemplateCover
 import com.intmainreturn00.bookar.platform.GlideApp
+import com.intmainreturn00.bookar.presentation.PodkovaFont
+import com.intmainreturn00.bookar.presentation.setCustomFont
 import kotlinx.android.synthetic.main.book.view.*
 
 

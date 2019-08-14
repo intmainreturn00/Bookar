@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.viewmodels
+package com.intmainreturn00.bookar.presentation.viewmodels
 
 import android.app.Application
 import android.util.SparseBooleanArray

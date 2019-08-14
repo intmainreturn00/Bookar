@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui
+package com.intmainreturn00.bookar.presentation
 
 import android.os.Bundle
 import android.view.WindowManager

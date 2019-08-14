@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui;
+package com.intmainreturn00.bookar.presentation;
 
 /*
  * Copyright 2018 Google LLC

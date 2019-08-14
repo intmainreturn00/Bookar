@@ -1,14 +1,14 @@
-package com.intmainreturn00.bookar.ui.fragments
+package com.intmainreturn00.bookar.presentation.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.intmainreturn00.bookar.ui.PodkovaFont
+import com.intmainreturn00.bookar.presentation.PodkovaFont
 
 import com.intmainreturn00.bookar.R
 import com.intmainreturn00.bookar.platform.ScopedFragment
-import com.intmainreturn00.bookar.ui.setCustomFont
+import com.intmainreturn00.bookar.presentation.setCustomFont
 import com.intmainreturn00.grapi.grapi
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.coroutines.launch

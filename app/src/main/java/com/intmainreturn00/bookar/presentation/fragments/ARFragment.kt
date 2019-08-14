@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui.fragments
+package com.intmainreturn00.bookar.presentation.fragments
 
 
 import android.content.ContentValues
@@ -34,8 +34,8 @@ import com.intmainreturn00.bookar.*
 import com.intmainreturn00.bookar.data.network.BitmapLoader
 import com.intmainreturn00.bookar.domain.*
 import com.intmainreturn00.bookar.platform.ScopedFragment
-import com.intmainreturn00.bookar.ui.*
-import com.intmainreturn00.bookar.viewmodels.BooksViewModel
+import com.intmainreturn00.bookar.presentation.*
+import com.intmainreturn00.bookar.presentation.viewmodels.BooksViewModel
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_ar.*
 import kotlinx.android.synthetic.main.fragment_ar.header

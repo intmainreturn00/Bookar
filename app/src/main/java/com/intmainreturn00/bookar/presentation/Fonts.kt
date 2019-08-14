@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui
+package com.intmainreturn00.bookar.presentation
 
 import android.graphics.Typeface
 import android.widget.TextView

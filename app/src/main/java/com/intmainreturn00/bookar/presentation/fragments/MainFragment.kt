@@ -1,4 +1,4 @@
-package com.intmainreturn00.bookar.ui.fragments
+package com.intmainreturn00.bookar.presentation.fragments
 
 
 import android.os.Bundle
@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 
 
 import com.intmainreturn00.bookar.R
-import com.intmainreturn00.bookar.viewmodels.BooksViewModel
+import com.intmainreturn00.bookar.presentation.viewmodels.BooksViewModel
 import com.intmainreturn00.grapi.grapi
 
 class MainFragment : Fragment() {
