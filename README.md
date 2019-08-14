@@ -10,7 +10,10 @@ Visualize all your books in AR 📚
 <a href="https://play.google.com/store/apps/details?id=com.intmainreturn00.bookar" target="_blank">
 <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="90"/></a>
 
-You can find implementation details at my [Medium Post](https://medium.com/@intmainreturn00/all-my-books-in-ar-c4d740a3ecbb) <img src="https://github.com/Medium/medium-logos/blob/master/monogram/Monogram.png" width="20">
+Related Medium Posts:
+
+* [All my books in AR](https://medium.com/@intmainreturn00/all-my-books-in-ar-c4d740a3ecbb) <img src="https://github.com/Medium/medium-logos/blob/master/monogram/Monogram.png" width="20">
+* [From stuff.kt to Architecture](https://medium.com/@intmainreturn00/from-stuff-kt-to-architecture-905426799dae) <img src="https://github.com/Medium/medium-logos/blob/master/monogram/Monogram.png" width="20">
 
 ## Architecture
 <img src="img/clean.png" width="400"/></a><img src="img/clean_mvvm.png" width="400"/></a>
