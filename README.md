@@ -12,4 +12,9 @@ Visualize all your books in AR 📚
 
 You can find implementation details at my [Medium Post](https://medium.com/@intmainreturn00/all-my-books-in-ar-c4d740a3ecbb) <img src="https://github.com/Medium/medium-logos/blob/master/monogram/Monogram.png" width="20">
 
+## Architecture
+<img src="img/clean.png" width="400"/></a><img src="img/clean_mvvm.png" width="400"/></a>
+
+<img src="img/comparison.png" width="400"/></a>
+
 If you’d like the work, star this repo ⭐️ or you can [buy me a cup of coffee](http://ko-fi.com/intmainreturn00) ☕️
