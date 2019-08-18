@@ -72,7 +72,8 @@ class BooksRepository private constructor(
             println("@ $user")
             println("@ get reviews from network")
 //            val allReviews = grapi.getReviewList(user.id.toString(), perPage = 50).reviews
-            val allReviews = grapi.getAllReviews(user.id.toString())
+//            val allReviews = grapi.getAllReviews(user.id.toString())
+            val allReviews = grapi.getAllReviewsConcurrent(user.id.toString())
             val numBooks = allReviews.size
             val numPages = allReviews.sumBy { it.book.numPages ?: 0 }
             println("@ update user with stats to db")
