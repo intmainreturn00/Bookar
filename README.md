@@ -1,6 +1,8 @@
 # Bookar
 Visualize all your books in AR 📚
 
+Since Goodreads [retire](https://www.goodreads.com/api) their api, this project should be considered deprecated as well.
+
 ![](img/group.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
