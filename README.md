@@ -1,7 +1,9 @@
 # Bookar
-Visualize all your books in AR 📚 *Since Goodreads [retire](https://www.goodreads.com/api) their api, this project should be considered deprecated as well.*
+Visualize all your books in AR 📚 
 
-<img src="img/group.png" height="300"> <img src="https://miro.medium.com/v2/resize:fit:722/format:webp/1*DBrwC_dODLOc_-6rFFZlZw.png" height="280">
+*Since Goodreads [retire](https://www.goodreads.com/api) their api, this project should be considered deprecated as well.*
+
+<img src="https://miro.medium.com/v2/resize:fit:722/format:webp/1*DBrwC_dODLOc_-6rFFZlZw.png" height="280">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <img src="https://img.shields.io/badge/made%20with-kotlin-blue.svg" alt="made with Kotlin">
