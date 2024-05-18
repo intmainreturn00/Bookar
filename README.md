@@ -17,4 +17,4 @@ Related Medium Posts:
 * [All my books in AR](https://medium.com/@intmainreturn00/all-my-books-in-ar-c4d740a3ecbb)
 * [From stuff.kt to Architecture](https://medium.com/@intmainreturn00/from-stuff-kt-to-architecture-905426799dae)
 
-If you’d like the work, star this repo ⭐️ or you can [buy me a cup of coffee](http://ko-fi.com/intmainreturn00) ☕️
+[coffee](http://ko-fi.com/intmainreturn00) ☕️
